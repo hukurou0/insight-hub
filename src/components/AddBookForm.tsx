@@ -16,7 +16,7 @@ import {
   Box,
   ModalFooter,
 } from '@chakra-ui/react';
-import { ViewIcon, EditIcon } from '@chakra-ui/icons';
+import { EditIcon } from '@chakra-ui/icons';
 import { v4 as uuidv4 } from 'uuid';
 import { Book } from '../types/book';
 import { BookCamera } from './BookCamera';

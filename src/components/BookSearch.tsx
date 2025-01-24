@@ -7,7 +7,6 @@ import {
   VStack,
   HStack,
   Select,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';

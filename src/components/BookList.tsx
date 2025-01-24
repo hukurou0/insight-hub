@@ -1,11 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Select,
   IconButton,
   HStack,
