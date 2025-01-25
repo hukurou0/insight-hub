@@ -1,8 +1,9 @@
 import React, { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Box, Button, VStack, keyframes, HStack, Image } from '@chakra-ui/react';
+import { Box, Button, VStack, HStack, Image } from '@chakra-ui/react';
 import { ViewIcon, EditIcon } from '@chakra-ui/icons';
 import OpenAI from 'openai';
+import { keyframes } from '@emotion/react';
 
 const flashAnimation = keyframes`
   0% { opacity: 0; }
