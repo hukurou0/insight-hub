@@ -15,7 +15,7 @@ export async function uploadBookCover(file: string) {
     const filePath = `${user.id}/book-covers/${fileName}`;
 
     // Supabaseストレージにアップロード
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('books')
       .upload(filePath, blob, {
         contentType: 'image/jpeg',

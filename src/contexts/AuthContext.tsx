@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
 import { useToast } from '@chakra-ui/react';
 import { supabase } from '../lib/supabase';
 import { AuthContextType, AuthState } from '../types/auth';
