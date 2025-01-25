@@ -15,11 +15,13 @@ import {
   Image,
   Box,
   ModalFooter,
+  useToast,
 } from '@chakra-ui/react';
 import { EditIcon } from '@chakra-ui/icons';
 import { v4 as uuidv4 } from 'uuid';
 import { Book } from '../types/book';
 import { BookCamera } from './BookCamera';
+import { uploadBookCover } from '../utils/uploadImage';
 
 interface AddBookFormProps {
   onAddBook: (book: Book) => void;
@@ -35,7 +37,6 @@ interface FormState {
   showCamera: boolean;
 }
 
-// 事前定義されたカテゴリー
 const predefinedCategories = [
   'ビジネス',
   '技術書',
@@ -51,13 +52,14 @@ const initialState: FormState = {
   author: '',
   category: '',
   coverImage: null,
-  showCamera: true, // デフォルトでカメラを表示
+  showCamera: true,
 };
 
 export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormProps) {
   const [state, setState] = useState<FormState>(initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const toast = useToast();
 
-  // モーダルが開いたときにカメラを表示
   useEffect(() => {
     if (isOpen) {
       setState(prev => ({ ...prev, showCamera: true }));
@@ -69,28 +71,47 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
     onClose();
   };
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
     }
     
     if (!state.title || !state.author) return;
 
-    const book: Book = {
-      id: uuidv4(),
-      title: state.title,
-      author: state.author,
-      status: '未読',
-      category: state.category,
-      coverImage: state.coverImage || undefined,
-      lastReadDate: new Date().toISOString(),
-    };
+    setIsSubmitting(true);
+    try {
+      // 画像がある場合はSupabaseストレージにアップロード
+      let coverImageUrl = null;
+      if (state.coverImage) {
+        coverImageUrl = await uploadBookCover(state.coverImage);
+      }
 
-    onAddBook(book);
-    setState(initialState);
+      const book: Book = {
+        id: uuidv4(),
+        title: state.title,
+        author: state.author,
+        status: '未読',
+        category: state.category,
+        coverImage: coverImageUrl,
+        lastReadDate: new Date().toISOString(),
+      };
+
+      await onAddBook(book);
+      setState(initialState);
+    } catch (error) {
+      toast({
+        title: 'エラー',
+        description: '本の追加中にエラーが発生しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleBookInfoDetected = (
+  const handleBookInfoDetected = async (
     detectedTitle: string, 
     detectedAuthor: string, 
     detectedCategory: string,
@@ -205,6 +226,8 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
             <Button
               colorScheme="blue"
               onClick={() => handleSubmit()}
+              isLoading={isSubmitting}
+              loadingText="追加中..."
               isDisabled={!state.title || !state.author}
             >
               追加
