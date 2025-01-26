@@ -1,6 +1,5 @@
 import { Box, Container, Flex, Heading, Button, HStack, useBreakpointValue, useDisclosure, IconButton, Image } from '@chakra-ui/react';
 import { Link as RouterLink, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { Profile } from './Profile';
 import { SettingsIcon } from '@chakra-ui/icons';
 
