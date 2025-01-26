@@ -208,7 +208,7 @@ function App() {
     <Container maxW="container.lg" py={8}>
       <VStack spacing={8} alignItems="stretch">
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Heading>読書記録</Heading>
+          <Heading>InsightHub</Heading>
           <Button onClick={() => signOut()} colorScheme="gray">
             ログアウト
           </Button>

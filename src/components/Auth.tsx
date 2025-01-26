@@ -162,10 +162,10 @@ export default function Auth() {
       >
         <VStack spacing={6}>
           <Heading size="xl" textAlign="center" mb={2}>
-            読書記録
+            InsightHub
           </Heading>
           <Text fontSize="lg" color="gray.600" textAlign="center" mb={6}>
-            あなたの読書体験を記録・管理
+          「ただ読むだけ」で終わらない体験を
           </Text>
 
           <Tabs isFitted variant="enclosed" width="100%">
