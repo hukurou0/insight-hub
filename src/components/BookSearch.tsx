@@ -69,7 +69,7 @@ export const BookSearch: React.FC<BookSearchProps> = ({ books, onFilteredBooksCh
   };
 
   return (
-    <VStack spacing={4} width="100%" mb={6}>
+    <VStack spacing={4} width="100%" mb={2}>
       <InputGroup>
         <InputLeftElement pointerEvents="none">
           <SearchIcon color="gray.500" />
