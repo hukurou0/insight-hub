@@ -4,9 +4,10 @@ drop table if exists books;
 -- booksテーブルの作成
 create table books (
   id uuid primary key,
+  user_id uuid not null references auth.users(id),
   title text not null,
   author text not null,
-  status text not null check (status in ('未読', '読書中', '読了')),
+  status text not null check (status in ('未読', '読書中', '読了(ノート未完成)', '読了(ノート完成)')),
   category text,
   cover_image text,
   notes text,
@@ -20,27 +21,28 @@ create index books_title_idx on books (title);
 create index books_author_idx on books (author);
 create index books_status_idx on books (status);
 create index books_category_idx on books (category);
+create index books_user_id_idx on books (user_id);
 
 -- RLSポリシーの設定
 alter table books enable row level security;
 
--- 匿名ユーザーに対する読み取り/書き込み権限の付与
-create policy "Anyone can read books"
+-- ユーザーごとのアクセス制御
+create policy "Enable read access for authenticated users"
   on books for select
-  to anon
+  to authenticated
   using (true);
 
-create policy "Anyone can insert books"
+create policy "Enable insert access for authenticated users"
   on books for insert
-  to anon
-  with check (true);
+  to authenticated
+  with check (auth.uid() = user_id);
 
-create policy "Anyone can update books"
+create policy "Enable update access for authenticated users"
   on books for update
-  to anon
-  using (true);
+  to authenticated
+  using (auth.uid() = user_id);
 
-create policy "Anyone can delete books"
+create policy "Enable delete access for authenticated users"
   on books for delete
-  to anon
-  using (true);
+  to authenticated
+  using (auth.uid() = user_id);

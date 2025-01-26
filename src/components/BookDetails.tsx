@@ -11,8 +11,8 @@ import {
   useToast,
   HStack,
   Badge,
-  IconButton,
   Flex,
+  useBreakpointValue,
 } from '@chakra-ui/react';
 import { ArrowBackIcon, DeleteIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
@@ -27,10 +27,20 @@ export const BookDetails = () => {
   const [book, setBook] = useState<Book | null>(null);
   const [notes, setNotes] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
     if (id && user) {
       fetchBook();
+      if (window.location.hash === '#notes') {
+        setIsEditing(true);
+        setTimeout(() => {
+          const notesSection = document.getElementById('notes-section');
+          if (notesSection) {
+            notesSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      }
     }
   }, [id, user]);
 
@@ -88,6 +98,8 @@ export const BookDetails = () => {
       if (error) throw error;
 
       setIsEditing(false);
+      setBook({ ...book, notes, lastReadDate: new Date().toISOString() });
+      
       toast({
         title: '保存完了',
         description: '読書ノートを保存しました。',
@@ -95,9 +107,6 @@ export const BookDetails = () => {
         duration: 3000,
         isClosable: true,
       });
-
-      // Update local state
-      setBook({ ...book, notes, lastReadDate: new Date().toISOString() });
     } catch (error) {
       console.error('Error saving notes:', error);
       toast({
@@ -151,69 +160,113 @@ export const BookDetails = () => {
 
   return (
     <Box>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Button
-          leftIcon={<ArrowBackIcon />}
-          variant="ghost"
-          onClick={() => navigate(-1)}
-        >
-          戻る
-        </Button>
-        <IconButton
-          aria-label="本を削除"
-          icon={<DeleteIcon />}
-          colorScheme="red"
-          variant="ghost"
-          onClick={handleDelete}
-        />
-      </Flex>
-
-      <VStack spacing={6} align="stretch">
-        <HStack spacing={8}>
-          {book.coverImage && (
-            <Image
-              src={book.coverImage}
-              alt={book.title}
-              maxW="200px"
-              objectFit="cover"
-              borderRadius="md"
-            />
-          )}
-          
-          <VStack align="start" spacing={3}>
-            <Heading size="lg">{book.title}</Heading>
-            <Text fontSize="lg" color="gray.600">
-              {book.author}
-            </Text>
-            {book.category && (
-              <Badge colorScheme="blue" fontSize="sm">
-                {book.category}
-              </Badge>
+      <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+        <Box position="relative">
+          <Flex 
+            direction={{ base: 'column', md: 'row' }}
+            gap={{ base: 3, md: 8 }}
+            align={{ base: 'center', md: 'start' }}
+          >
+            {book.coverImage && (
+              <Image
+                src={book.coverImage}
+                alt={book.title}
+                maxW={{ base: '150px', md: '200px' }}
+                objectFit="cover"
+                borderRadius="md"
+              />
             )}
-            {book.lastReadDate && (
-              <Text fontSize="sm" color="gray.500">
-                最終更新: {new Date(book.lastReadDate).toLocaleDateString()}
+            
+            <VStack align="stretch" spacing={3} w="full">
+              <Flex
+                w="full"
+                justify="space-between"
+                align="center"
+              >
+                <Box flex="1">
+                  <Heading 
+                    size={{ base: 'md', md: 'lg' }}
+                    textAlign={{ base: 'center', md: 'left' }}
+                  >
+                    {book.title}
+                  </Heading>
+                </Box>
+                {!isMobile && (
+                  <Button
+                    leftIcon={<ArrowBackIcon />}
+                    variant="ghost"
+                    onClick={() => navigate(-1)}
+                  >
+                    戻る
+                  </Button>
+                )}
+              </Flex>
+
+              <Text
+                fontSize={{ base: 'md', md: 'lg' }}
+                color="gray.600"
+                textAlign={{ base: 'center', md: 'left' }}
+              >
+                {book.author}
               </Text>
-            )}
-          </VStack>
-        </HStack>
+              <HStack spacing={2} justify={{ base: 'center', md: 'start' }} wrap="wrap">
+                <Badge colorScheme="blue" fontSize="sm">
+                  {book.status}
+                </Badge>
+                {book.category && (
+                  <Badge colorScheme="green" fontSize="sm">
+                    {book.category}
+                  </Badge>
+                )}
+              </HStack>
+              {book.lastReadDate && (
+                <Text
+                  fontSize="sm"
+                  color="gray.500"
+                  textAlign={{ base: 'center', md: 'left' }}
+                >
+                  最終更新: {new Date(book.lastReadDate).toLocaleDateString()}
+                </Text>
+              )}
+            </VStack>
+          </Flex>
+          {isMobile && (
+            <Button
+              leftIcon={<ArrowBackIcon />}
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              size="sm"
+              position="absolute"
+              top={0}
+              right={0}
+            >
+              戻る
+            </Button>
+          )}
+        </Box>
 
-        <Box>
-          <Heading size="md" mb={4}>
+        <Box id="notes-section" mt={{ base: 3, md: 8 }}>
+          <Heading size="md" mb={{ base: 2, md: 4 }}>
             読書ノート
           </Heading>
           {isEditing ? (
-            <VStack spacing={4} align="stretch">
+            <VStack spacing={{ base: 3, md: 4 }} align="stretch">
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                minH="200px"
+                minH={{ base: "150px", md: "200px" }}
                 placeholder="読書の気づきや学びを記録しましょう..."
+                fontSize={{ base: "sm", md: "md" }}
               />
-              <HStack spacing={4}>
+              <Flex
+                direction={{ base: "column", sm: "row" }}
+                gap={{ base: 2, sm: 4 }}
+                width="100%"
+              >
                 <Button
                   colorScheme="blue"
                   onClick={handleSaveNotes}
+                  width={{ base: "100%", sm: "auto" }}
                 >
                   保存
                 </Button>
@@ -223,23 +276,39 @@ export const BookDetails = () => {
                     setNotes(book.notes || '');
                     setIsEditing(false);
                   }}
+                  width={{ base: "100%", sm: "auto" }}
                 >
                   キャンセル
                 </Button>
-              </HStack>
+              </Flex>
             </VStack>
           ) : (
-            <VStack align="stretch" spacing={4}>
-              <Text whiteSpace="pre-wrap">
+            <VStack align="stretch" spacing={{ base: 3, md: 4 }}>
+              <Text
+                whiteSpace="pre-wrap"
+                fontSize={{ base: "sm", md: "md" }}
+              >
                 {book.notes || 'まだノートがありません。'}
               </Text>
-              <Button
-                onClick={() => setIsEditing(true)}
-                colorScheme="blue"
-                variant="outline"
-              >
-                ノートを編集
-              </Button>
+              <Flex direction="column" gap={{ base: 2, md: 4 }} width="100%">
+                <Button
+                  onClick={() => navigate(`/books/${book.id}/write`)}
+                  colorScheme="blue"
+                  variant="outline"
+                  width={{ base: "100%", sm: "auto" }}
+                >
+                  ノートを書く
+                </Button>
+                <Button
+                  leftIcon={<DeleteIcon />}
+                  onClick={handleDelete}
+                  colorScheme="red"
+                  variant="outline"
+                  width={{ base: "100%", sm: "auto" }}
+                >
+                  本を削除
+                </Button>
+              </Flex>
             </VStack>
           )}
         </Box>

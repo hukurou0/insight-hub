@@ -57,9 +57,14 @@ export const Layout = () => {
             align="center"
             w="100%"
             gap={isMobile ? 3 : 4}
-            py={isMobile ? 2 : 4}
+            py={isMobile ? 2 : 3}
           >
-            <Flex justify="space-between" align="center" w={isMobile ? "100%" : "auto"}>
+            <Flex 
+              justify="space-between" 
+              align="center" 
+              w={isMobile ? "100%" : "auto"}
+              gap={8}
+            >
               <Flex as={RouterLink} to="/" align="center" gap={2}>
                 <Image
                   src="/icon.webp"
@@ -72,6 +77,14 @@ export const Layout = () => {
                   InsightHub
                 </Heading>
               </Flex>
+
+              {!isMobile && (
+                <HStack spacing={1} height="40px">
+                  <TabButton to="/notes">読書ノート</TabButton>
+                  <TabButton to="/search">本を探す</TabButton>
+                </HStack>
+              )}
+
               <IconButton
                 aria-label="アカウント設定"
                 icon={<SettingsIcon />}
@@ -81,20 +94,23 @@ export const Layout = () => {
               />
             </Flex>
             
-            <Flex direction="column" width={isMobile ? '100%' : 'auto'} align="center">
-              <HStack spacing={1} borderBottom="1px" borderColor="gray.200" width="100%" justify="center">
-                <TabButton to="/search">本を探す</TabButton>
-                <TabButton to="/notes">読書ノート</TabButton>
-              </HStack>
-            </Flex>
+            {isMobile && (
+              <Flex direction="column" width="100%" align="center">
+                <HStack spacing={1} borderBottom="1px" borderColor="gray.200" width="100%" justify="center">
+                  <TabButton to="/notes">読書ノート</TabButton>
+                  <TabButton to="/search">本を探す</TabButton>
+                </HStack>
+              </Flex>
+            )}
 
-            <IconButton
-              aria-label="アカウント設定"
-              icon={<SettingsIcon />}
-              variant="ghost"
-              onClick={onOpen}
-              display={isMobile ? "none" : "flex"}
-            />
+            {!isMobile && (
+              <IconButton
+                aria-label="アカウント設定"
+                icon={<SettingsIcon />}
+                variant="ghost"
+                onClick={onOpen}
+              />
+            )}
           </Flex>
         </Container>
       </Box>

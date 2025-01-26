@@ -6,6 +6,8 @@ import { Layout } from './components/Layout';
 import { SearchPage } from './components/SearchPage';
 import { BookNotes } from './components/BookNotes';
 import { BookDetails } from './components/BookDetails';
+import { NoteTypeSelector } from './components/NoteTypeSelector';
+import { SimpleNote } from './components/SimpleNote';
 
 function App() {
   const { user, loading } = useAuth();
@@ -40,6 +42,8 @@ function App() {
           
           {/* 本の詳細ページ */}
           <Route path="books/:id" element={<BookDetails />} />
+          <Route path="books/:id/write" element={<NoteTypeSelector />} />
+          <Route path="books/:id/notes/simple" element={<SimpleNote />} />
         </Route>
       </Routes>
     </BrowserRouter>

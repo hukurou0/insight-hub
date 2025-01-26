@@ -90,7 +90,7 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
         id: uuidv4(),
         title: state.title,
         author: state.author,
-        status: '未読',
+        status: '未読' as const,
         category: state.category,
         coverImage: coverImageUrl,
         lastReadDate: new Date().toISOString(),
