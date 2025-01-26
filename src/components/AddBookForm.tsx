@@ -19,7 +19,7 @@ import {
   Text,
   UnorderedList,
   ListItem,
-  HStack,
+  Stack,
 } from '@chakra-ui/react';
 import { EditIcon, ViewIcon } from '@chakra-ui/icons';
 import { v4 as uuidv4 } from 'uuid';
@@ -154,10 +154,10 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
       <ModalContent>
         <ModalHeader>本を追加</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody pt={0} mt={-4}>
           {state.showHelpModal ? (
-            <VStack spacing={3} p={{ base: 4, md: 6 }}>
-              <Box bg="blue.50" p={{ base: 4, md: 5 }} borderRadius="lg" w="100%">
+            <VStack spacing={2} p={{ base: 2, md: 5 }}>
+              <Box bg="blue.50" p={{ base: 3, md: 5 }} borderRadius="lg" w="100%">
                 <Text fontSize="lg" fontWeight="bold" mb={2} color="blue.700">
                   カメラで本を追加
                 </Text>
@@ -165,18 +165,23 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
                   本の表紙を撮影するだけで、タイトルや著者名を自動で読み取ることができます。
                 </Text>
               </Box>
-              <Box bg="gray.50" p={{ base: 4, md: 5 }} borderRadius="lg" w="100%">
-                <Text fontSize="lg" fontWeight="bold" mb={2} color="gray.700">
+              <Box bg="gray.50" p={{ base: 3, md: 5 }} borderRadius="lg" w="100%">
+                <Text fontSize="lg" fontWeight="bold" mb={1} color="gray.700">
                   使い方
                 </Text>
-                <UnorderedList spacing={{ base: 2, md: 3 }} pl={4} color="gray.700">
+                <UnorderedList spacing={{ base: 1.5, md: 3 }} pl={4} color="gray.700">
                   <ListItem>本の表紙全体が画面に収まるように調整してください</ListItem>
                   <ListItem>できるだけ明るい場所で撮影してください</ListItem>
                   <ListItem>表紙の文字が読みやすい角度で撮影してください</ListItem>
                   <ListItem>読み取った情報は後から編集できます</ListItem>
                 </UnorderedList>
               </Box>
-              <HStack spacing={4} w="100%" mt={2}>
+              <Stack
+                direction={{ base: 'column', sm: 'row' }}
+                spacing={{ base: 3, sm: 4 }}
+                w="100%"
+                mt={2}
+              >
                 <Button
                   onClick={() => setState(prev => ({
                     ...prev,
@@ -184,7 +189,7 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
                     showCamera: false
                   }))}
                   variant="outline"
-                  size="lg"
+                  size={{ base: 'md', sm: 'lg' }}
                   width="full"
                   leftIcon={<EditIcon />}
                 >
@@ -193,13 +198,13 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
                 <Button
                   onClick={handleStartCamera}
                   colorScheme="blue"
-                  size="lg"
+                  size={{ base: 'md', sm: 'lg' }}
                   width="full"
                   leftIcon={<ViewIcon />}
                 >
                   カメラを起動
                 </Button>
-              </HStack>
+              </Stack>
             </VStack>
           ) : state.showCamera ? (
             <BookCamera 
