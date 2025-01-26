@@ -1,4 +1,4 @@
-import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Stack, Collapse, IconButton, HStack } from '@chakra-ui/react';
+import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { Book } from '../types/book';
 import { supabase } from '../lib/supabase';
