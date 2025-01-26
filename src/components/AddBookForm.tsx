@@ -16,8 +16,12 @@ import {
   Box,
   ModalFooter,
   useToast,
+  Text,
+  UnorderedList,
+  ListItem,
+  HStack,
 } from '@chakra-ui/react';
-import { EditIcon } from '@chakra-ui/icons';
+import { EditIcon, ViewIcon } from '@chakra-ui/icons';
 import { v4 as uuidv4 } from 'uuid';
 import { Book } from '../types/book';
 import { BookCamera } from './BookCamera';
@@ -35,6 +39,7 @@ interface FormState {
   category: string;
   coverImage: string | null;
   showCamera: boolean;
+  showHelpModal: boolean;
 }
 
 const predefinedCategories = [
@@ -52,7 +57,8 @@ const initialState: FormState = {
   author: '',
   category: '',
   coverImage: null,
-  showCamera: true,
+  showCamera: false,
+  showHelpModal: true,
 };
 
 export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormProps) {
@@ -62,9 +68,17 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
 
   useEffect(() => {
     if (isOpen) {
-      setState(prev => ({ ...prev, showCamera: true }));
+      setState(prev => ({ ...prev, showHelpModal: true }));
     }
   }, [isOpen]);
+
+  const handleStartCamera = () => {
+    setState(prev => ({
+      ...prev,
+      showHelpModal: false,
+      showCamera: true
+    }));
+  };
 
   const handleClose = () => {
     setState(initialState);
@@ -141,7 +155,53 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
         <ModalHeader>本を追加</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          {state.showCamera ? (
+          {state.showHelpModal ? (
+            <VStack spacing={3} p={{ base: 4, md: 6 }}>
+              <Box bg="blue.50" p={{ base: 4, md: 5 }} borderRadius="lg" w="100%">
+                <Text fontSize="lg" fontWeight="bold" mb={2} color="blue.700">
+                  カメラで本を追加
+                </Text>
+                <Text fontSize="md" color="gray.700">
+                  本の表紙を撮影するだけで、タイトルや著者名を自動で読み取ることができます。
+                </Text>
+              </Box>
+              <Box bg="gray.50" p={{ base: 4, md: 5 }} borderRadius="lg" w="100%">
+                <Text fontSize="lg" fontWeight="bold" mb={2} color="gray.700">
+                  使い方
+                </Text>
+                <UnorderedList spacing={{ base: 2, md: 3 }} pl={4} color="gray.700">
+                  <ListItem>本の表紙全体が画面に収まるように調整してください</ListItem>
+                  <ListItem>できるだけ明るい場所で撮影してください</ListItem>
+                  <ListItem>表紙の文字が読みやすい角度で撮影してください</ListItem>
+                  <ListItem>読み取った情報は後から編集できます</ListItem>
+                </UnorderedList>
+              </Box>
+              <HStack spacing={4} w="100%" mt={2}>
+                <Button
+                  onClick={() => setState(prev => ({
+                    ...prev,
+                    showHelpModal: false,
+                    showCamera: false
+                  }))}
+                  variant="outline"
+                  size="lg"
+                  width="full"
+                  leftIcon={<EditIcon />}
+                >
+                  手動で入力
+                </Button>
+                <Button
+                  onClick={handleStartCamera}
+                  colorScheme="blue"
+                  size="lg"
+                  width="full"
+                  leftIcon={<ViewIcon />}
+                >
+                  カメラを起動
+                </Button>
+              </HStack>
+            </VStack>
+          ) : state.showCamera ? (
             <BookCamera 
               onBookInfoDetected={handleBookInfoDetected}
               onSwitchToManual={handleSwitchToManual}
@@ -218,7 +278,7 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
             </form>
           )}
         </ModalBody>
-        {!state.showCamera && (
+        {!state.showCamera && !state.showHelpModal && (
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={handleClose}>
               キャンセル

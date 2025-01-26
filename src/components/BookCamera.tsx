@@ -97,7 +97,7 @@ export const BookCamera: React.FC<BookCameraProps> = ({ onBookInfoDetected, onSw
 
   return (
     <VStack spacing={4} align="center">
-      <Box 
+      <Box
         position="relative" 
         width="100%" 
         maxW="300px"
