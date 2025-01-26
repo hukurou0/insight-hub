@@ -13,6 +13,8 @@ import {
   Badge,
   Flex,
   useBreakpointValue,
+  Skeleton,
+  SkeletonText,
 } from '@chakra-ui/react';
 import { ArrowBackIcon, DeleteIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
@@ -27,6 +29,8 @@ export const BookDetails = () => {
   const [book, setBook] = useState<Book | null>(null);
   const [notes, setNotes] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
@@ -45,6 +49,8 @@ export const BookDetails = () => {
   }, [id, user]);
 
   const fetchBook = async () => {
+    setIsLoading(true);
+    setIsImageLoading(true);
     try {
       const { data, error } = await supabase
         .from('books')
@@ -78,6 +84,8 @@ export const BookDetails = () => {
         duration: 5000,
         isClosable: true,
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -154,6 +162,43 @@ export const BookDetails = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <Box>
+        <VStack spacing={{ base: 4, md: 6 }} align="stretch">
+          <Box position="relative">
+            <Flex
+              direction={{ base: 'column', md: 'row' }}
+              gap={{ base: 3, md: 8 }}
+              align={{ base: 'center', md: 'start' }}
+            >
+              <Skeleton height={{ base: '150px', md: '200px' }} width={{ base: '150px', md: '200px' }} />
+              
+              <VStack align="stretch" spacing={3} w="full">
+                <Flex w="full" justify="space-between" align="center">
+                  <Box flex="1">
+                    <SkeletonText noOfLines={1} skeletonHeight="8" width="80%" />
+                  </Box>
+                </Flex>
+                <SkeletonText noOfLines={1} skeletonHeight="6" width="60%" />
+                <HStack spacing={2}>
+                  <Skeleton height="20px" width="60px" />
+                  <Skeleton height="20px" width="60px" />
+                </HStack>
+                <SkeletonText noOfLines={1} skeletonHeight="4" width="40%" />
+              </VStack>
+            </Flex>
+          </Box>
+
+          <Box mt={{ base: 3, md: 8 }}>
+            <SkeletonText noOfLines={1} skeletonHeight="6" width="120px" mb={4} />
+            <SkeletonText noOfLines={4} spacing="4" />
+          </Box>
+        </VStack>
+      </Box>
+    );
+  }
+
   if (!book) {
     return null;
   }
@@ -167,15 +212,32 @@ export const BookDetails = () => {
             gap={{ base: 3, md: 8 }}
             align={{ base: 'center', md: 'start' }}
           >
-            {book.coverImage && (
-              <Image
-                src={book.coverImage}
-                alt={book.title}
-                maxW={{ base: '150px', md: '200px' }}
-                objectFit="cover"
-                borderRadius="md"
-              />
-            )}
+            <Box width={{ base: '150px', md: '200px' }}>
+              {book.coverImage ? (
+                <Skeleton
+                  isLoaded={!isImageLoading}
+                  height={{ base: '150px', md: '200px' }}
+                  borderRadius="md"
+                >
+                  <Image
+                    src={book.coverImage}
+                    alt={book.title}
+                    width="100%"
+                    height={{ base: '150px', md: '200px' }}
+                    objectFit="cover"
+                    borderRadius="md"
+                    onLoad={() => setIsImageLoading(false)}
+                  />
+                </Skeleton>
+              ) : (
+                <Box
+                  width="100%"
+                  height={{ base: '150px', md: '200px' }}
+                  bg="gray.100"
+                  borderRadius="md"
+                />
+              )}
+            </Box>
             
             <VStack align="stretch" spacing={3} w="full">
               <Flex
