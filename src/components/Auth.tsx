@@ -165,7 +165,7 @@ export default function Auth() {
             InsightHub
           </Heading>
           <Text fontSize="lg" color="gray.600" textAlign="center" mb={6}>
-          「ただ読むだけ」で終わらない体験を
+          "読むだけ"で終わらない体験を
           </Text>
 
           <Tabs isFitted variant="enclosed" width="100%">
