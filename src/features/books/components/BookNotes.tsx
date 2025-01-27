@@ -303,13 +303,25 @@ export default function BookNotes() {
   return (
     <Box position="relative" minH="calc(100vh - 200px)">
       <VStack spacing={8} align="stretch">
-        <Flex justify="space-between" align="center" mb={{ base: 0, md: 6 }}>
+        <Flex justify="space-between" align="center" mb={{ base: 0, md: 2 }}>
           <Heading size="lg">読書ノートを書く</Heading>
-          {!isMobile && <AddBookButton />}
+          {!isMobile && books.length > 0 && <AddBookButton />}
         </Flex>
         
         {books.length === 0 ? (
-          <Text>読書ノートを書く本がありません。本を読んでいる途中の本や読み終わった本のノートを書きましょう。</Text>
+          <VStack spacing={{ base: 2, md: 4 }} align="center" py={{ base: 0, md: 4 }}>
+            <Text fontSize="lg" textAlign="center">
+              {isMobile ? (
+                <>
+                  まだ本が登録されていません。<br />
+                  本を登録してみましょう！
+                </>
+              ) : (
+                "まだ本が登録されていません。「本を追加」ボタンから本を登録してみましょう！"
+              )}
+            </Text>
+            <AddBookButton />
+          </VStack>
         ) : (
           <VStack spacing={{ base: 4, md: 8 }} align="stretch">
             {renderBookSection(
@@ -322,7 +334,7 @@ export default function BookNotes() {
           </VStack>
         )}
 
-        {isMobile && (
+        {isMobile && books.length > 0 && (
           <Box
             position="fixed"
             bottom={8}
