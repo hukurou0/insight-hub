@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Box, Button, VStack, HStack, Image } from '@chakra-ui/react';
 import { ViewIcon, EditIcon } from '@chakra-ui/icons';
