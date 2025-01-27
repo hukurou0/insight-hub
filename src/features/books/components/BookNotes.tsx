@@ -14,19 +14,13 @@ export default function BookNotes() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
   const toast = useToast();
-  const [expandedSection, setExpandedSection] = useState<string | null>('ready');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchBooksWithNotes();
     }
   }, [user]);
-
-  useEffect(() => {
-    if (isMobile && books.some(book => book.status === '読了(ノート未完成)')) {
-      setExpandedSection('ready');
-    }
-  }, [isMobile, books]);
 
   const fetchBooksWithNotes = async () => {
     try {
