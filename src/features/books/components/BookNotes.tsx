@@ -310,7 +310,7 @@ export default function BookNotes() {
         
         {books.length === 0 ? (
           <VStack spacing={{ base: 2, md: 4 }} align="center" py={{ base: 0, md: 4 }}>
-            <Text fontSize="lg" textAlign="center">
+            <Text fontSize="lg" textAlign="center" mb={isMobile ? 4 : 2}>
               {isMobile ? (
                 <>
                   まだ本が登録されていません。<br />
