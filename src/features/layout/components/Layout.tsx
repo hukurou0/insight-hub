@@ -96,7 +96,7 @@ export default function Layout() {
             
             {isMobile && (
               <Flex direction="column" width="100%" align="center">
-                <HStack spacing={1} borderBottom="1px" borderColor="gray.200" width="100%" justify="center">
+                <HStack spacing={1} width="100%" justify="center">
                   <TabButton to="/notes">読書ノート</TabButton>
                   <TabButton to="/search">本を探す</TabButton>
                 </HStack>
