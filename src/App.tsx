@@ -1,13 +1,16 @@
 import { Spinner, Center, VStack, Heading } from '@chakra-ui/react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './contexts/AuthContext';
-import Auth from './components/Auth';
-import { Layout } from './components/Layout';
-import { SearchPage } from './components/SearchPage';
-import { BookNotes } from './components/BookNotes';
-import { BookDetails } from './components/BookDetails';
-import { NoteTypeSelector } from './components/NoteTypeSelector';
-import { SimpleNote } from './components/SimpleNote';
+import { Auth, useAuth } from './features/auth';
+import { Layout } from './features/layout';
+import {
+  SearchPage,
+  BookNotes,
+  BookDetails,
+} from './features/books';
+import {
+  NoteTypeSelector,
+  SimpleNote,
+} from './features/notes';
 
 function App() {
   const { user, loading } = useAuth();
@@ -42,7 +45,11 @@ function App() {
           
           {/* 本の詳細ページ */}
           <Route path="books/:id" element={<BookDetails />} />
+
+          {/* ノートタイプ選択ページ */}  
           <Route path="books/:id/write" element={<NoteTypeSelector />} />
+
+          {/* シンプルノートページ */}
           <Route path="books/:id/notes/simple" element={<SimpleNote />} />
         </Route>
       </Routes>
