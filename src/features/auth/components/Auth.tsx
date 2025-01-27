@@ -54,6 +54,11 @@ const AuthForm = memo(({
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            handleSubmit(isSignUp);
+          }
+        }}
         placeholder="your@email.com"
         size="lg"
       />
@@ -66,6 +71,11 @@ const AuthForm = memo(({
           type={showPassword ? 'text' : 'password'}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSubmit(isSignUp);
+            }
+          }}
           placeholder="******"
           size="lg"
         />
@@ -170,10 +180,53 @@ export default function Auth() {
             学びの新体験を
           </Text>
 
-          <Tabs isFitted variant="enclosed" width="100%">
-            <TabList mb="1em">
-              <Tab>ログイン</Tab>
-              <Tab>新規登録</Tab>
+          <Tabs
+            isFitted
+            variant="line"
+            width="100%"
+            colorScheme="blue"
+          >
+            <TabList
+              mb="1.5em"
+              borderBottom="2px solid"
+              borderColor="gray.200"
+            >
+              <Tab
+                py={3}
+                px={8}
+                fontSize="lg"
+                fontWeight="medium"
+                _selected={{
+                  color: 'blue.600',
+                  borderBottom: "4px solid",
+                  borderColor: "blue.500",
+                  fontWeight: "bold",
+                  marginBottom: "-2px"
+                }}
+                _hover={{
+                  color: 'blue.400'
+                }}
+              >
+                ログイン
+              </Tab>
+              <Tab
+                py={3}
+                px={8}
+                fontSize="lg"
+                fontWeight="medium"
+                _selected={{
+                  color: 'blue.600',
+                  borderBottom: "4px solid",
+                  borderColor: "blue.500",
+                  fontWeight: "bold",
+                  marginBottom: "-2px"
+                }}
+                _hover={{
+                  color: 'blue.400'
+                }}
+              >
+                新規登録
+              </Tab>
             </TabList>
             <TabPanels>
               <TabPanel>
