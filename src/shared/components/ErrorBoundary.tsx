@@ -1,5 +1,6 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { Box, Heading, Text, Button, VStack, Container } from '@chakra-ui/react';
+import Auth from '../../features/auth/components/Auth';
 
 interface Props {
   children: ReactNode;
@@ -17,6 +18,15 @@ export default class ErrorBoundary extends Component<Props, State> {
     error: null,
     errorInfo: null,
   };
+
+  private isAuthError(): boolean {
+    const { error, errorInfo } = this.state;
+    if (!error || !errorInfo) return false;
+    
+    const componentStack = errorInfo.componentStack || '';
+    return error.message?.includes('Cannot read properties of null (reading \'useState\')') &&
+           componentStack.includes('AuthProvider');
+  }
 
   public static getDerivedStateFromError(error: Error): State {
     return {
@@ -36,6 +46,10 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      if (this.isAuthError()) {
+        return <Auth />;
+      }
+
       return (
         <Container maxW="container.md" py={10}>
           <VStack spacing={6} align="stretch">
