@@ -17,11 +17,9 @@ import {
   ModalFooter,
   useToast,
   Text,
-  UnorderedList,
-  ListItem,
   Stack,
 } from '@chakra-ui/react';
-import { EditIcon, ViewIcon, Icon } from '@chakra-ui/icons';
+import { EditIcon, Icon } from '@chakra-ui/icons';
 import { BsCamera } from 'react-icons/bs';
 import { v4 as uuidv4 } from 'uuid';
 import { Book } from '../types/book';
