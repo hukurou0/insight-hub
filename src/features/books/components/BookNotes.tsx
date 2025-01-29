@@ -1,7 +1,7 @@
 import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon, StarIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
 import { supabase } from '../../../shared/services/supabase';
 import { useAuth } from '../../auth';
@@ -332,18 +332,34 @@ export default function BookNotes() {
         </Flex>
         
         {books.length === 0 ? (
-          <VStack spacing={{ base: 2, md: 4 }} align="center" py={{ base: 0, md: 4 }}>
-            <Text fontSize="lg" textAlign="center" mb={isMobile ? 4 : 2}>
-              {isMobile ? (
-                <>
-                  まだ本が登録されていません。<br />
-                  本を登録してみましょう！
-                </>
-              ) : (
-                "まだ本が登録されていません。「本を追加」ボタンから本を登録してみましょう！"
-              )}
-            </Text>
-            <AddBookButton />
+          <VStack spacing={4} py={12} px={4} align="center">
+            <StarIcon
+              w={12}
+              h={12}
+              color="yellow.400"
+              animation="bounce 1s infinite"
+            />
+            <VStack spacing={2}>
+              <Text
+                fontSize="xl"
+                fontWeight="bold"
+                color="yellow.500"
+                textAlign="center"
+              >
+                新しい本を読んでInsightを貯めましょう！
+              </Text>
+              <Text
+                fontSize="md"
+                color="gray.600"
+                textAlign="center"
+              >
+                読書を通じて得た気づきや学びを<br />
+                ノートとして残していきましょう
+              </Text>
+            </VStack>
+            <Box pt={4}>
+              <AddBookButton />
+            </Box>
           </VStack>
         ) : (
           <VStack spacing={{ base: 4, md: 8 }} align="stretch">
