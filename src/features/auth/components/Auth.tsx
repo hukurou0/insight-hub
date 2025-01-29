@@ -19,7 +19,6 @@ import {
   InputGroup,
   InputRightElement,
   IconButton,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -114,8 +113,8 @@ export default function Auth() {
   const { signIn, signUp } = useAuth();
   const toast = useToast();
 
-  const bgColor = useColorModeValue('white', 'gray.700');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const bgColor = 'white';
+  const borderColor = 'gray.200';
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);

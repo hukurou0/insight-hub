@@ -1,8 +1,8 @@
 import { extendTheme, type ThemeConfig } from '@chakra-ui/react'
 
 const config: ThemeConfig = {
-  initialColorMode: 'system',
-  useSystemColorMode: true,
+  initialColorMode: 'light',
+  useSystemColorMode: false,
 }
 
 const colors = {
@@ -25,10 +25,6 @@ const styles = {
     'html, body': {
       bg: 'white',
       color: 'gray.800',
-      _dark: {
-        bg: 'gray.800',
-        color: 'whiteAlpha.900',
-      },
     },
   },
 }
