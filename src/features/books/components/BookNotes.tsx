@@ -58,6 +58,13 @@ export default function BookNotes() {
       }
     } catch (error) {
       console.error('Error fetching books with notes:', error);
+      toast({
+        title: 'エラー',
+        description: '本の読み込みに失敗しました。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setIsLoading(false);
     }
