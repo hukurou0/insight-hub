@@ -1,4 +1,4 @@
-import { VStack, Text, Badge, Box } from '@chakra-ui/react';
+import { VStack, Text, Badge, Box, Spinner, Center } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,10 +6,12 @@ import { Book } from '../types/book';
 import BookSearch from './BookSearch';
 import { supabase } from '../../../shared/services/supabase';
 import { useAuth } from '../../auth';
+import { fetchWithMinDuration } from '../../../shared/utils/fetchWithMinDuration';
 
 export default function SearchPage() {
   const [books, setBooks] = useState<Book[]>([]);
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -20,16 +22,21 @@ export default function SearchPage() {
   }, [user]);
 
   const fetchBooks = async () => {
-    try {
+    setIsLoading(true);
+
+    const fetchBooks = async () => {
       const { data, error } = await supabase
         .from('books')
         .select('*')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
+      return data;
+    };
+
+    try {
+      const data = await fetchWithMinDuration(fetchBooks);
 
       if (data) {
         const formattedBooks = data.map(book => ({
@@ -48,6 +55,8 @@ export default function SearchPage() {
       }
     } catch (error) {
       console.error('Error fetching books:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -64,7 +73,20 @@ export default function SearchPage() {
         />
 
         <VStack spacing={{ base: 2, md: 4 }} align="stretch">
-          {filteredBooks.length === 0 ? (
+          {isLoading ? (
+            <Center py={12}>
+              <VStack spacing={4}>
+                <Spinner
+                  thickness="4px"
+                  speed="0.65s"
+                  emptyColor="gray.200"
+                  color="blue.500"
+                  size="xl"
+                />
+                <Text color="gray.600">本を検索中...</Text>
+              </VStack>
+            </Center>
+          ) : filteredBooks.length === 0 ? (
             <VStack spacing={4} py={12} px={4}>
               <SearchIcon
                 w={12}

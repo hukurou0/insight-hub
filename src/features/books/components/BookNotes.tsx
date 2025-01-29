@@ -1,4 +1,4 @@
-import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack } from '@chakra-ui/react';
+import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack, Spinner, Center } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon, StarIcon } from '@chakra-ui/icons';
@@ -7,9 +7,11 @@ import { supabase } from '../../../shared/services/supabase';
 import { useAuth } from '../../auth';
 import { generateCoverImage } from '../../../shared/utils/generateCoverImage';
 import AddBookForm  from './AddBookForm';
+import { fetchWithMinDuration } from '../../../shared/utils/fetchWithMinDuration';
 
 export default function BookNotes() {
   const [books, setBooks] = useState<Book[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -23,34 +25,41 @@ export default function BookNotes() {
   }, [user]);
 
   const fetchBooksWithNotes = async () => {
-    try {
+    setIsLoading(true);
+
+    const fetchBooks = async () => {
       const { data, error } = await supabase
         .from('books')
         .select('*')
         .eq('user_id', user?.id)
         .neq('status', '読了(ノート完成)')
         .order('updated_at', { ascending: false });
+    
+      if (error) throw error;
+      return data;
+    };
 
-      if (error) {
-        throw error;
-      }
+    try {
+      const data = await fetchWithMinDuration(fetchBooks);
 
       if (data) {
-        const formattedBooks = data.map(book => ({
-          id: book.id,
-          title: book.title,
-          author: book.author,
-          status: book.status,
-          category: book.category,
-          coverImage: book.cover_image,
-          notes: book.notes,
-          lastReadDate: book.last_read_date,
-        }));
-
-        setBooks(formattedBooks);
+        setBooks(
+          data.map(book => ({
+            id: book.id,
+            title: book.title,
+            author: book.author,
+            status: book.status,
+            category: book.category,
+            coverImage: book.cover_image,
+            notes: book.notes,
+            lastReadDate: book.last_read_date,
+          }))
+        );
       }
     } catch (error) {
       console.error('Error fetching books with notes:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -331,7 +340,20 @@ export default function BookNotes() {
           {!isMobile && books.length > 0 && <AddBookButton />}
         </Flex>
         
-        {books.length === 0 ? (
+        {isLoading ? (
+          <Center py={12}>
+            <VStack spacing={4}>
+              <Spinner
+                thickness="4px"
+                speed="0.65s"
+                emptyColor="gray.200"
+                color="blue.500"
+                size="xl"
+              />
+              <Text color="gray.600">読書ノートを読み込み中...</Text>
+            </VStack>
+          </Center>
+        ) : books.length === 0 ? (
           <VStack spacing={4} py={12} px={4} align="center">
             <StarIcon
               w={12}
