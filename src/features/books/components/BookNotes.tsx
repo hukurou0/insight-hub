@@ -1,7 +1,7 @@
 import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { AddIcon, EditIcon, ChevronDownIcon, ChevronUpIcon, TimeIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
 import { supabase } from '../../../shared/services/supabase';
 import { useAuth } from '../../auth';
@@ -167,39 +167,62 @@ export default function BookNotes() {
     return (
       <Box>
         {isMobile ? (
-          <Button
+          <Box
+            as="button"
             width="100%"
             onClick={toggleSection}
-            bg="gray.50"
+            bg={isExpanded ? "blue.50" : "white"}
             borderWidth="1px"
-            borderRadius="md"
+            borderColor={isExpanded ? "blue.200" : "gray.200"}
+            borderRadius="xl"
             shadow="sm"
-            mb={2}
-            py={3}
-            px={4}
+            mb={3}
+            py={4}
+            px={5}
             _hover={{
-              bg: "gray.100",
+              bg: isExpanded ? "blue.100" : "gray.50",
+              borderColor: isExpanded ? "blue.300" : "gray.300",
               transform: "translateY(-1px)",
               shadow: "md",
             }}
             _active={{
-              bg: "gray.200",
+              transform: "translateY(0)",
+              shadow: "sm",
             }}
-            transition="all 0.2s"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           >
             <Flex width="100%" align="center" justify="space-between">
-              <Text fontWeight="bold" color="gray.700">{title}</Text>
-              <Flex align="center">
-                <Text color="gray.600" fontSize="sm" mr={2}>
-                  {books.length}冊
+              <HStack spacing={3}>
+                <Text
+                  fontWeight="bold"
+                  color={isExpanded ? "blue.700" : "gray.700"}
+                  fontSize="md"
+                  transition="color 0.3s ease"
+                >
+                  {title}
                 </Text>
-                {isExpanded ? 
-                  <ChevronUpIcon boxSize={6} color="blue.500" /> : 
-                  <ChevronDownIcon boxSize={6} color="blue.500" />
-                }
-              </Flex>
+                <Badge
+                  colorScheme={isExpanded ? "blue" : "gray"}
+                  variant="subtle"
+                  fontSize="xs"
+                  px={2}
+                  py={1}
+                  borderRadius="full"
+                >
+                  {books.length}冊
+                </Badge>
+              </HStack>
+              <Box
+                transform={isExpanded ? "rotate(180deg)" : "rotate(0deg)"}
+                transition="transform 0.3s ease"
+              >
+                <ChevronDownIcon
+                  boxSize={5}
+                  color={isExpanded ? "blue.500" : "gray.400"}
+                />
+              </Box>
             </Flex>
-          </Button>
+          </Box>
         ) : (
           <Heading size="md" mb={4}>{title}</Heading>
         )}
