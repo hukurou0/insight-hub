@@ -342,10 +342,12 @@ export default function BookNotes() {
   return (
     <Box position="relative" minH="calc(100vh - 200px)">
       <VStack spacing={8} align="stretch">
-        <Flex justify="space-between" align="center" mb={{ base: 0, md: 2 }}>
-          <Heading size="lg">読書ノートを書く</Heading>
-          {!isMobile && books.length > 0 && <AddBookButton />}
-        </Flex>
+        {!isMobile ? (
+          <Flex justify="space-between" align="center" mb={{ base: 0, md: 2 }}>
+            <Heading size="lg">本を読んでInsightを貯めましょう</Heading>
+            {!isMobile && books.length > 0 && <AddBookButton />}
+          </Flex>
+        ):(<></>)}
         
         {isLoading ? (
           <Center py={12}>
