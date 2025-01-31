@@ -345,9 +345,13 @@ export default function BookNotes() {
         {!isMobile ? (
           <Flex justify="space-between" align="center" mb={{ base: 0, md: 2 }}>
             <Heading size="lg">本を読んでInsightを貯めましょう</Heading>
-            {!isMobile && books.length > 0 && <AddBookButton />}
+            {books.length > 0 && <AddBookButton />}
           </Flex>
-        ):(<></>)}
+        ):(
+          <Flex justify="space-between" align="center" mb={{ base: 0, md: 0 }}>
+            <Heading size="lg">Insightを貯めましょう</Heading>
+          </Flex>
+        )}
         
         {isLoading ? (
           <Center py={12}>
