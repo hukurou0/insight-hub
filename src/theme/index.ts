@@ -24,7 +24,10 @@ const styles = {
   global: {
     'html, body': {
       bg: 'white',
-      color: 'gray.800',
+      color: 'gray.900',
+      WebkitTextSizeAdjust: '100%',
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
     },
   },
 }
