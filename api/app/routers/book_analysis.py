@@ -1,63 +1,63 @@
 import os
 from fastapi import APIRouter, HTTPException
+from dotenv import load_dotenv
 from ..schemas.book_analysis import BookAnalysisRequest, BookAnalysisResponse
-import openai
+from openai import OpenAI
 import base64
-from io import BytesIO
+import json
+from pydantic import BaseModel, Field
+
+load_dotenv()
 
 router = APIRouter()
 
 # OpenAI APIキーの設定
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-@router.post("/analyze", response_model=BookAnalysisResponse)
+class BookModel(BaseModel):
+    title: str = Field(..., description="本のタイトル")
+    author: str = Field(..., description="著者名")
+    category: str = Field(..., description="カテゴリー")
+
+@router.post("/analyze", response_model=BookModel)
 async def analyze_book_cover(request: BookAnalysisRequest):
     try:
         # Base64画像をデコード
         image_data = base64.b64decode(request.image_base64.split(',')[1] if ',' in request.image_base64 else request.image_base64)
         
         # OpenAI APIを呼び出して画像を解析
-        response = await openai.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": "この本の表紙から本のタイトルと著者名を抽出してください。できるだけ正確に文字を認識してください。以下のJSON形式で返してください(マークダウンは使わないでください): {\"title\": \"タイトル\", \"author\": \"著者名\", \"category\": \"カテゴリー\"}"
-                        },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64.b64encode(image_data).decode('utf-8')}",
-                                "detail": "high"
-                            }
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "この本の表紙から本のタイトルと著者名を抽出してください。できるだけ正確に文字を認識してください。以下のJSON形式で返してください(マークダウンは使わないでください): {\"title\": \"タイトル\", \"author\": \"著者名\", \"category\": \"カテゴリー\"}"
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64.b64encode(image_data).decode('utf-8')}",
+                            "detail": "high"
                         }
-                    ]
-                }
-            ],
-            max_tokens=300
-        )
+                    }
+                ]
+            }
+        ]
 
-        content = response.choices[0].message.content
-        if content:
-            try:
-                # JSONの部分を抽出して解析
-                json_match = content.strip('`').strip()
-                if json_match.startswith('json'):
-                    json_match = json_match[4:]
-                import json
-                book_info = json.loads(json_match)
-                return BookAnalysisResponse(
-                    title=book_info["title"],
-                    author=book_info["author"],
-                    category=book_info.get("category")
-                )
-            except Exception as e:
-                raise HTTPException(status_code=422, detail=f"Failed to parse book info: {str(e)}")
-        else:
-            raise HTTPException(status_code=422, detail="No content in response")
+        response = client.beta.chat.completions.parse(
+            model="gpt-4o",
+            messages=messages,
+            response_format=BookModel,
+            max_tokens=4096,
+        )
+        response_dict = json.loads(response.choices[0].message.content)
+        book_info = BookModel(**response_dict)
+        return BookAnalysisResponse(
+            title=book_info.title,
+            author=book_info.author,
+            category=book_info.category
+        )
 
     except Exception as e:
         print(e)
