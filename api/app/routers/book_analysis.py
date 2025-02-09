@@ -6,7 +6,7 @@ from openai import OpenAI
 import base64
 import json
 from pydantic import BaseModel, Field
-
+from enum import Enum
 load_dotenv()
 
 router = APIRouter()
@@ -14,10 +14,19 @@ router = APIRouter()
 # OpenAI APIキーの設定
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+class BookCategory(Enum):
+    BUSINESS = "ビジネス"
+    TECHNOLOGY = "技術書" 
+    NOVEL = "小説"
+    SELF_HELP = "自己啓発"
+    HISTORY = "歴史"
+    SCIENCE = "科学"
+    OTHER = "その他"
+    
 class BookModel(BaseModel):
     title: str = Field(..., description="本のタイトル")
     author: str = Field(..., description="著者名")
-    category: str = Field(..., description="カテゴリー")
+    category: BookCategory = Field(..., description="カテゴリー")
 
 @router.post("/analyze", response_model=BookModel)
 async def analyze_book_cover(request: BookAnalysisRequest):
