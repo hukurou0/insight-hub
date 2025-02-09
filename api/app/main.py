@@ -1,14 +1,13 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from .routers.books import router as books_router
+from .routers.book_analysis import router as book_analysis_router
 
 app = FastAPI(title="Book Tracker API")
-
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 本番環境では適切に制限する
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,7 +22,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 # ルーターの登録
-app.include_router(books_router, prefix="/api")
+app.include_router(book_analysis_router, prefix="/api/book-analysis")
 
 @app.get("/health")
 async def health_check():

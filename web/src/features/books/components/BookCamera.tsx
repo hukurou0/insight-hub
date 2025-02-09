@@ -2,7 +2,6 @@ import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 import { Box, Button, VStack, HStack, Image } from '@chakra-ui/react';
 import { ViewIcon, EditIcon } from '@chakra-ui/icons';
-import OpenAI from 'openai';
 import { keyframes } from '@emotion/react';
 
 const flashAnimation = keyframes`
@@ -22,12 +21,7 @@ interface BookCameraProps {
   onSwitchToManual?: () => void;
 }
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
-
-// 本の表紙に適したアスペクト比（3:4）を設定
+// 本の表紙に適したアスペクト比(3:4)を設定
 const videoConstraints = {
   facingMode: "environment",
   aspectRatio: 3 / 4,
@@ -52,41 +46,22 @@ export default function BookCamera({ onBookInfoDetected, onSwitchToManual }: Boo
     setIsCapturing(true);
 
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { 
-                type: "text", 
-                text: "この本の表紙から本のタイトルと著者名を抽出してください。できるだけ正確に文字を認識してください。以下のJSON形式で返してください（マークダウンは使わないでください）: {\"title\": \"タイトル\", \"author\": \"著者名\", \"category\": \"カテゴリー\"}" 
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: imageSrc,
-                  detail: "high"
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 300
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/book-analysis/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_base64: imageSrc
+        })
       });
 
-      const content = response.choices[0].message.content;
-      if (content) {
-        try {
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const bookInfo = JSON.parse(jsonMatch[0]);
-            onBookInfoDetected(bookInfo.title, bookInfo.author, bookInfo.category || '', imageSrc);
-          }
-        } catch (error) {
-          console.error('Failed to parse book info:', error);
-        }
+      if (!response.ok) {
+        throw new Error('Failed to analyze book cover');
       }
+
+      const bookInfo = await response.json();
+      onBookInfoDetected(bookInfo.title, bookInfo.author, bookInfo.category || '', imageSrc);
     } catch (error) {
       console.error('Error processing image:', error);
     } finally {

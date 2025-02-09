@@ -7,9 +7,6 @@ load_dotenv()
 SUPABASE_URL = getenv("SUPABASE_URL")
 SUPABASE_KEY = getenv("SUPABASE_KEY")
 
-print(SUPABASE_URL)
-print(SUPABASE_KEY)
-
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase environment variables")
 
