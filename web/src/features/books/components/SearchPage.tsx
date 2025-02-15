@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../types/book';
 import BookSearch from './BookSearch';
-import { supabase } from '../../../shared/services/supabase';
+import { api } from '../../../shared/services/api';
 import { useAuth } from '../../auth';
 import { fetchWithMinDuration } from '../../../shared/utils/fetchWithMinDuration';
 
@@ -26,34 +26,14 @@ export default function SearchPage() {
     setIsLoading(true);
 
     const fetchBooks = async () => {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
+      const data = await api.fetchBooksWithNotes(user!.id);
       return data;
     };
 
     try {
       const data = await fetchWithMinDuration(fetchBooks);
-
-      if (data) {
-        const formattedBooks = data.map(book => ({
-          id: book.id,
-          title: book.title,
-          author: book.author,
-          status: book.status,
-          category: book.category,
-          coverImage: book.cover_image,
-          notes: book.notes,
-          lastReadDate: book.last_read_date,
-        }));
-
-        setBooks(formattedBooks);
-        setFilteredBooks(formattedBooks);
-      }
+      setBooks(data);
+      setFilteredBooks(data);
     } catch (error) {
       console.error('Error fetching books:', error);
       toast({

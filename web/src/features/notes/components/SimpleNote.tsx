@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { ArrowBackIcon } from '@chakra-ui/icons';
 import { Book } from '../../books/types/book';
-import { supabase } from '../../../shared/services/supabase';
+import { api } from '../../../shared/services/api';
 import { useAuth } from '../../auth';
 
 export default function SimpleNote() {
@@ -31,29 +31,9 @@ export default function SimpleNote() {
 
   const fetchBook = async () => {
     try {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        const formattedBook: Book = {
-          id: data.id,
-          title: data.title,
-          author: data.author,
-          status: data.status,
-          category: data.category,
-          coverImage: data.cover_image,
-          notes: data.notes,
-          lastReadDate: data.last_read_date,
-        };
-        setBook(formattedBook);
-        setNotes(data.notes || '');
-      }
+      const data = await api.fetchBook(id!, user!.id);
+      setBook(data);
+      setNotes(data.notes || '');
     } catch (error) {
       console.error('Error fetching book:', error);
       toast({
@@ -70,18 +50,7 @@ export default function SimpleNote() {
     if (!book) return;
 
     try {
-      const { error } = await supabase
-        .from('books')
-        .update({
-          notes: notes,
-          status: complete ? '読了(ノート完成)' : book.status,
-          last_read_date: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', book.id)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
+      await api.completeBookNotes(book.id, user!.id, notes, complete);
 
       toast({
         title: '保存完了',

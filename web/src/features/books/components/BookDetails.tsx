@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { ArrowBackIcon, DeleteIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
-import { supabase } from '../../../shared/services/supabase';
+import { api } from '../../../shared/services/api';
 import { useAuth } from '../../auth';
 
 export default function BookDetails() {
@@ -51,29 +51,9 @@ export default function BookDetails() {
     setIsLoading(true);
     setIsImageLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('id', id)
-        .eq('user_id', user?.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        const formattedBook: Book = {
-          id: data.id,
-          title: data.title,
-          author: data.author,
-          status: data.status,
-          category: data.category,
-          coverImage: data.cover_image,
-          notes: data.notes,
-          lastReadDate: data.last_read_date,
-        };
-        setBook(formattedBook);
-        setNotes(data.notes || '');
-      }
+      const data = await api.fetchBook(id!, user!.id);
+      setBook(data);
+      setNotes(data.notes || '');
     } catch (error) {
       console.error('Error fetching book:', error);
       toast({
@@ -92,18 +72,7 @@ export default function BookDetails() {
     if (!book) return;
 
     try {
-      const { error } = await supabase
-        .from('books')
-        .update({
-          notes: notes,
-          last_read_date: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', book.id)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
+      await api.updateBookNotes(book.id, user!.id, notes);
       setIsEditing(false);
       setBook({ ...book, notes, lastReadDate: new Date().toISOString() });
       
@@ -131,13 +100,7 @@ export default function BookDetails() {
 
     if (window.confirm('この本を削除してもよろしいですか？')) {
       try {
-        const { error } = await supabase
-          .from('books')
-          .delete()
-          .eq('id', book.id)
-          .eq('user_id', user?.id);
-
-        if (error) throw error;
+        await api.deleteBook(book.id, user!.id);
 
         toast({
           title: '削除完了',

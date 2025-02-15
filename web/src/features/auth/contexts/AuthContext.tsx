@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '../../../shared/services/supabase';
+import { User } from '../types/auth';
+import { auth } from '../services/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -17,43 +17,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setUser(session.user);
+    const initAuth = async () => {
+      try {
+        const user = await auth.getSession();
+        if (mounted) {
+          setUser(user);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
+
+    initAuth();
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    const unsubscribe = auth.onAuthStateChange((updatedUser) => {
+      if (mounted) {
+        setUser(updatedUser);
+      }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+    try {
+      const user = await auth.signIn(email, password);
+      setUser(user);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'ログインに失敗しました');
+      }
+      throw new Error('ログインに失敗しました');
+    }
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    if (error) throw error;
+    try {
+      await auth.signUp(email, password);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'アカウント作成に失敗しました');
+      }
+      throw new Error('アカウント作成に失敗しました');
+    }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      await auth.signOut();
+      setUser(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message || 'ログアウトに失敗しました');
+      }
+      throw new Error('ログアウトに失敗しました');
+    }
   };
 
   return (

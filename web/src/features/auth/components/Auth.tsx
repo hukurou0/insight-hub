@@ -54,12 +54,13 @@ const AuthForm = memo(({
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'Enter' && !loading) {
             handleSubmit(isSignUp);
           }
         }}
         placeholder="your@email.com"
         size="lg"
+        isDisabled={loading}
       />
     </FormControl>
 
@@ -71,12 +72,13 @@ const AuthForm = memo(({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !loading) {
               handleSubmit(isSignUp);
             }
           }}
           placeholder="******"
           size="lg"
+          isDisabled={loading}
         />
         <InputRightElement h="full">
           <IconButton
@@ -85,6 +87,7 @@ const AuthForm = memo(({
             onClick={() => setShowPassword(!showPassword)}
             variant="ghost"
             size="sm"
+            isDisabled={loading}
           />
         </InputRightElement>
       </InputGroup>
@@ -98,6 +101,7 @@ const AuthForm = memo(({
       onClick={() => handleSubmit(isSignUp)}
       isLoading={loading}
       loadingText={isSignUp ? '登録中...' : 'ログイン中...'}
+      isDisabled={!email || !password || loading}
     >
       {isSignUp ? '新規登録' : 'ログイン'}
     </Button>
@@ -125,6 +129,8 @@ export default function Auth() {
   };
 
   const handleSubmit = async (isSignUp: boolean) => {
+    if (loading) return;
+    
     setError('');
     
     if (!validateEmail(email)) {
@@ -153,7 +159,11 @@ export default function Auth() {
         await signIn(email, password);
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : '予期せぬエラーが発生しました');
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('予期せぬエラーが発生しました');
+      }
     } finally {
       setLoading(false);
     }
@@ -205,6 +215,7 @@ export default function Auth() {
                 _hover={{
                   color: 'blue.400'
                 }}
+                isDisabled={loading}
               >
                 ログイン
               </Tab>
@@ -223,6 +234,7 @@ export default function Auth() {
                 _hover={{
                   color: 'blue.400'
                 }}
+                isDisabled={loading}
               >
                 新規登録
               </Tab>

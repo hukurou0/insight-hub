@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon, StarIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
-import { supabase } from '../../../shared/services/supabase';
+import { api } from '../../../shared/services/api';
 import { useAuth } from '../../auth';
 import { generateCoverImage } from '../../../shared/utils/generateCoverImage';
 import AddBookForm  from './AddBookForm';
@@ -28,34 +28,13 @@ export default function BookNotes() {
     setIsLoading(true);
 
     const fetchBooks = async () => {
-      const { data, error } = await supabase
-        .from('books')
-        .select('*')
-        .eq('user_id', user?.id)
-        .neq('status', '読了(ノート完成)')
-        .order('updated_at', { ascending: false });
-    
-      if (error) throw error;
-      return data;
+      const data = await api.fetchBooksWithNotes(user!.id);
+      return data.filter(book => book.status !== '読了(ノート完成)');
     };
 
     try {
       const data = await fetchWithMinDuration(fetchBooks);
-
-      if (data) {
-        setBooks(
-          data.map(book => ({
-            id: book.id,
-            title: book.title,
-            author: book.author,
-            status: book.status,
-            category: book.category,
-            coverImage: book.cover_image,
-            notes: book.notes,
-            lastReadDate: book.last_read_date,
-          }))
-        );
-      }
+      setBooks(data);
     } catch (error) {
       console.error('Error fetching books with notes:', error);
       toast({
@@ -72,17 +51,7 @@ export default function BookNotes() {
 
   const handleUpdateStatus = async (bookId: string, newStatus: Book['status']) => {
     try {
-      const { error } = await supabase
-        .from('books')
-        .update({
-          status: newStatus,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', bookId)
-        .eq('user_id', user?.id);
-
-      if (error) throw error;
-
+      await api.updateBookStatus(bookId, user!.id, newStatus);
       await fetchBooksWithNotes();
 
       toast({
@@ -110,26 +79,7 @@ export default function BookNotes() {
         coverImage: newBook.coverImage || generateCoverImage(newBook.title, newBook.author)
       };
 
-      const { error } = await supabase
-        .from('books')
-        .insert({
-          id: bookWithCover.id,
-          title: bookWithCover.title,
-          author: bookWithCover.author,
-          status: bookWithCover.status,
-          category: bookWithCover.category,
-          cover_image: bookWithCover.coverImage,
-          notes: bookWithCover.notes,
-          last_read_date: bookWithCover.lastReadDate,
-          user_id: user?.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-
-      if (error) {
-        throw error;
-      }
-
+      await api.addBook(user!.id, bookWithCover);
       await fetchBooksWithNotes();
 
       toast({
