@@ -106,7 +106,7 @@ export default function AddBookForm({ onAddBook, isOpen, onClose }: AddBookFormP
         author: state.author,
         status: '未読' as const,
         category: state.category,
-        coverImage: coverImageUrl,
+        coverImage: coverImageUrl || undefined,
         lastReadDate: new Date().toISOString(),
       };
 
