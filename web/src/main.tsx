@@ -8,8 +8,7 @@ import { ErrorBoundary } from './shared'
 
 // 環境変数のチェック
 const requiredEnvVars = {
-  VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
-  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
+  VITE_API_URL: import.meta.env.VITE_API_URL,
 };
 
 // 不足している環境変数をチェック
