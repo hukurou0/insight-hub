@@ -5,13 +5,17 @@ from .routers.book_analysis import router as book_analysis_router
 from .routers.auth import router as auth_router
 from .routers.books import router as books_router
 from .database import supabase
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = FastAPI(title="Book Tracker API")
 
 # CORS設定
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Viteのデフォルトポート
+    allow_origins=[os.getenv("FRONTEND_URL")],  # Viteのデフォルトポート
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
