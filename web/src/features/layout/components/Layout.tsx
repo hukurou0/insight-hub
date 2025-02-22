@@ -67,7 +67,7 @@ export default function Layout() {
             >
               <Flex as={RouterLink} to="/" align="center" gap={2}>
                 <Image
-                  src="/icon.webp"
+                  src="/insight-hub.png"
                   alt="InsightHub Logo"
                   width="32px"
                   height="32px"
