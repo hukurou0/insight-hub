@@ -1,4 +1,4 @@
-import { useState, memo, useRef, useEffect } from 'react';
+import { useState, memo } from 'react';
 import {
   Box,
   Button,
@@ -45,88 +45,73 @@ const AuthForm = memo(({
   error: string;
   loading: boolean;
   handleSubmit: (isSignUp: boolean) => void;
-}) => {
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const passwordInputRef = useRef<HTMLInputElement>(null);
+}) => (
+  <VStack spacing={4} w="100%">
+    <FormControl isInvalid={!!error}>
+      <FormLabel>メールアドレス</FormLabel>
+      <Input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !loading) {
+            handleSubmit(isSignUp);
+          }
+        }}
+        placeholder="your@email.com"
+        size="lg"
+        isDisabled={loading}
+        inputMode="email"
+        autoComplete="email"
+        autoCapitalize="none"
+      />
+    </FormControl>
 
-  useEffect(() => {
-    if (emailInputRef.current) {
-      emailInputRef.current.focus();
-    }
-  }, []);
-
-  return (
-    <VStack spacing={4} w="100%">
-      <FormControl isInvalid={!!error}>
-        <FormLabel>メールアドレス</FormLabel>
+    <FormControl isInvalid={!!error}>
+      <FormLabel>パスワード</FormLabel>
+      <InputGroup>
         <Input
-          ref={emailInputRef}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type={showPassword ? 'text' : 'password'}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !loading) {
-              if (passwordInputRef.current) {
-                passwordInputRef.current.focus();
-              }
+              handleSubmit(isSignUp);
             }
           }}
-          placeholder="your@email.com"
+          placeholder="******"
           size="lg"
           isDisabled={loading}
-          inputMode="email"
-          autoComplete="email"
+          autoComplete={isSignUp ? "new-password" : "current-password"}
           autoCapitalize="none"
         />
-      </FormControl>
-
-      <FormControl isInvalid={!!error}>
-        <FormLabel>パスワード</FormLabel>
-        <InputGroup>
-          <Input
-            ref={passwordInputRef}
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !loading) {
-                handleSubmit(isSignUp);
-              }
-            }}
-            placeholder="******"
-            size="lg"
+        <InputRightElement h="full">
+          <IconButton
+            aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
+            icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+            onClick={() => setShowPassword(!showPassword)}
+            variant="ghost"
+            size="sm"
             isDisabled={loading}
-            autoComplete={isSignUp ? "new-password" : "current-password"}
-            autoCapitalize="none"
           />
-          <InputRightElement h="full">
-            <IconButton
-              aria-label={showPassword ? 'パスワードを隠す' : 'パスワードを表示'}
-              icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
-              onClick={() => setShowPassword(!showPassword)}
-              variant="ghost"
-              size="sm"
-              isDisabled={loading}
-            />
-          </InputRightElement>
-        </InputGroup>
-        {error && <FormErrorMessage>{error}</FormErrorMessage>}
-      </FormControl>
+        </InputRightElement>
+      </InputGroup>
+      {error && <FormErrorMessage>{error}</FormErrorMessage>}
+    </FormControl>
 
-      <Button
-        colorScheme="blue"
-        size="lg"
-        width="100%"
-        onClick={() => handleSubmit(isSignUp)}
-        isLoading={loading}
-        loadingText={isSignUp ? '登録中...' : 'ログイン中...'}
-        isDisabled={!email || !password || loading}
-      >
-        {isSignUp ? '新規登録' : 'ログイン'}
-      </Button>
-    </VStack>
-  );
-});
+    <Button
+      colorScheme="blue"
+      size="lg"
+      width="100%"
+      onClick={() => handleSubmit(isSignUp)}
+      isLoading={loading}
+      loadingText={isSignUp ? '登録中...' : 'ログイン中...'}
+      isDisabled={!email || !password || loading}
+    >
+      {isSignUp ? '新規登録' : 'ログイン'}
+    </Button>
+  </VStack>
+));
 
 export default function Auth() {
   const [email, setEmail] = useState('');
