@@ -61,6 +61,9 @@ const AuthForm = memo(({
         placeholder="your@email.com"
         size="lg"
         isDisabled={loading}
+        inputMode="email"
+        autoComplete="email"
+        autoCapitalize="none"
       />
     </FormControl>
 
@@ -79,6 +82,8 @@ const AuthForm = memo(({
           placeholder="******"
           size="lg"
           isDisabled={loading}
+          autoComplete={isSignUp ? "new-password" : "current-password"}
+          autoCapitalize="none"
         />
         <InputRightElement h="full">
           <IconButton
