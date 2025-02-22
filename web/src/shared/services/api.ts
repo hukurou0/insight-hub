@@ -157,7 +157,7 @@ export const api = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch(`${API_URL}/api/upload`, {
+    const response = await fetch(`${API_URL}/api/books/img-upload`, {
       method: 'POST',
       body: formData,
     });
