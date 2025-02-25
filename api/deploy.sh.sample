@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Configuration
+AWS_REGION="<YOUR_AWS_REGION>"
+ECR_REPO_NAME="<YOUR_ECR_REPO_NAME>"
+IMAGE_TAG="latest"
+APP_RUNNER_SERVICE_NAME="<YOUR_APP_RUNNER_SERVICE_NAME>"
+CPU="1024"
+MEMORY="2048"
+
+# Get AWS account ID
+AWS_ACCOUNT_ID="<YOUR_AWS_ACCOUNT_ID>"
+ECR_REPO_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO_NAME}"
+
+echo "🚀 Starting deployment process..."
+
+# Build Docker image
+echo "📦 Building Docker image..."
+docker build --platform linux/x86_64 -t ${ECR_REPO_NAME}:${IMAGE_TAG} .
+
+# Tag image for ECR
+echo "🏷️  Tagging image for ECR..."
+docker tag ${ECR_REPO_NAME}:${IMAGE_TAG} ${ECR_REPO_URI}:${IMAGE_TAG}
+
+# Authenticate Docker with ECR
+echo "🔑 Authenticating with ECR..."
+aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URI}
+
+# Create ECR repository if it doesn't exist
+echo "📦 Ensuring ECR repository exists..."
+aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} --region ${AWS_REGION} || \
+    aws ecr create-repository --repository-name ${ECR_REPO_NAME} --region ${AWS_REGION}
+
+# Push image to ECR
+echo "⬆️  Pushing image to ECR..."
+docker push ${ECR_REPO_URI}:${IMAGE_TAG}
+
+echo "🚀 App Runnerへのデプロイを開始します..."
+
+# Get service ARN
+SERVICE_ARN=$(aws apprunner list-services --query "ServiceSummaryList[?ServiceName=='${APP_RUNNER_SERVICE_NAME}'].ServiceArn" --output text)
+
+if [ -n "${SERVICE_ARN}" ]; then
+    echo "📦 サービスを更新します..."
+    aws apprunner start-deployment \
+        --service-arn ${SERVICE_ARN}
+
+    echo "⏳ デプロイ状態を確認中..."
+    aws apprunner describe-service \
+        --service-arn ${SERVICE_ARN} \
+        --query 'Service.{Status:Status,URL:ServiceUrl}' \
+        --output table
+else
+    echo "❌ App Runnerサービスが見つかりません。"
+    echo "💡 先にApp Runnerサービスを作成してください。"
+    exit 1
+fi
+
+echo "✅ デプロイプロセスが完了しました！"
