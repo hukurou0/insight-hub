@@ -1,5 +1,5 @@
 import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack, Spinner, Center } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon, StarIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
@@ -15,7 +15,15 @@ export default function BookNotes() {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const toast = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const isLoaded = true;
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleUpdateStatus = async (newBook: Book) => {
     if (!user) return;

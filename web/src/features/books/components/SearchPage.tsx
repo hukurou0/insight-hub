@@ -13,8 +13,12 @@ export default function SearchPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    setFilteredBooks(books);
-    setIsLoading(false);
+    const timer = setTimeout(() => {
+      setFilteredBooks(books);
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [books]);
 
   const handleBookClick = (bookId: string) => {
