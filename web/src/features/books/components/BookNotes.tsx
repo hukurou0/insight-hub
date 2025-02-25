@@ -1,56 +1,27 @@
 import { VStack, Heading, Text, SimpleGrid, Box, Badge, Button, useDisclosure, useBreakpointValue, useToast, Flex, Collapse, HStack, Spinner, Center } from '@chakra-ui/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { AddIcon, EditIcon, ChevronDownIcon, TimeIcon, StarIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
-import { api } from '../../../shared/services/api';
 import { useAuth } from '../../auth';
 import { generateCoverImage } from '../../../shared/utils/generateCoverImage';
 import AddBookForm  from './AddBookForm';
-import { fetchWithMinDuration } from '../../../shared/utils/fetchWithMinDuration';
-import { useBooks } from '../contexts/BooksContext';
+import { useBooks } from '../hooks/useBooks';
 
 export default function BookNotes() {
-  const { books, setBooks, isLoaded } = useBooks();
+  const { books, addBook, updateBook } = useBooks();
   const { user } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
   const toast = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const isLoaded = true;
 
-  const fetchBooksWithNotes = async () => {
+  const handleUpdateStatus = async (newBook: Book) => {
     if (!user) return;
 
     try {
-      const data = await fetchWithMinDuration(async () => {
-        const books = await api.fetchBooksWithNotes(user.id);
-        return books.filter(book => book.status !== '読了(ノート完成)');
-      });
-      setBooks(data);
-    } catch (error) {
-      console.error('Error fetching books with notes:', error);
-      toast({
-        title: 'エラー',
-        description: '本の読み込みに失敗しました。',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchBooksWithNotes();
-    }
-  }, [user, setBooks]);
-
-  const handleUpdateStatus = async (bookId: string, newStatus: Book['status']) => {
-    if (!user) return;
-
-    try {
-      await api.updateBookStatus(bookId, user.id, newStatus);
-      await fetchBooksWithNotes();
+      await updateBook.mutateAsync(newBook);
 
       toast({
         title: '更新完了',
@@ -79,8 +50,7 @@ export default function BookNotes() {
         coverImage: newBook.coverImage || generateCoverImage(newBook.title, newBook.author)
       };
 
-      await api.addBook(user.id, bookWithCover);
-      await fetchBooksWithNotes();
+      await addBook.mutateAsync(bookWithCover);
 
       toast({
         title: '追加完了',
@@ -242,7 +212,7 @@ export default function BookNotes() {
                         variant="outline"
                         size="sm"
                         width="100%"
-                        onClick={() => handleUpdateStatus(book.id, '読書中')}
+                        onClick={() => handleUpdateStatus({ ...book, status: '読書中' })}
                       >
                         読書中にする
                       </Button>
@@ -254,7 +224,7 @@ export default function BookNotes() {
                         variant="outline"
                         size="sm"
                         width="100%"
-                        onClick={() => handleUpdateStatus(book.id, '読了(ノート未完成)')}
+                        onClick={() => handleUpdateStatus({ ...book, status: '読了(ノート未完成)' })}
                       >
                         読了にする
                       </Button>

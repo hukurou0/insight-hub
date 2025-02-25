@@ -3,7 +3,6 @@ import TrueFocus from './shared/components/TrueFocus';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Auth, useAuth } from './features/auth';
 import { Layout } from './features/layout';
-import { api } from './shared/services/api';
 import {
   SearchPage,
   BookNotes,
@@ -14,35 +13,23 @@ import {
   SimpleNote,
 } from './features/notes';
 import { useState, useEffect } from 'react';
-import { BooksProvider, useBooks } from './features/books/contexts/BooksContext';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './shared/services/queryClient';
+//import { useBooks } from './features/books/hooks/useBooks';
 
 function AppContent() {
   const { user, loading } = useAuth();
-  const { setBooks, isLoaded } = useBooks();
+  //const { books } = useBooks();
   const [showLoading, setShowLoading] = useState(true);
   const MIN_LOADING_TIME = 1650;
 
   useEffect(() => {
-    const prefetchData = async () => {
-      if (user && !isLoaded) {
-        try {
-          const books = await api.fetchBooksWithNotes(user.id);
-          setBooks(books);
-        } catch (error) {
-          console.error('Failed to prefetch books:', error);
-        }
-      }
-    };
-
     if (!loading) {
-      Promise.all([
-        prefetchData(),
-        new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME))
-      ]).then(() => {
+      setTimeout(() => {
         setShowLoading(false);
-      });
+      }, MIN_LOADING_TIME);
     }
-  }, [loading, user, setBooks, isLoaded]);
+  }, [loading]);
 
   if (showLoading) {
     return (
@@ -94,9 +81,9 @@ function AppContent() {
 
 function App() {
   return (
-      <BooksProvider>
-        <AppContent />
-      </BooksProvider>
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
 

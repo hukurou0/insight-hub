@@ -29,10 +29,12 @@ class BookCreate(BaseModel):
     last_read_date: Optional[datetime] = None
 
 class BookUpdate(BaseModel):
-    notes: Optional[str] = None
+    title: Optional[str] = None
+    author: Optional[str] = None
     status: Optional[str] = None
-    last_read_date: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    category: Optional[str] = None
+    notes: Optional[str] = None
+    cover_image: Optional[str] = None
 
 @router.get("", response_model=List[Book])
 async def get_books(user_id: str = Header(..., alias="user-id")):
@@ -71,69 +73,6 @@ async def create_book(book: BookCreate, user_id: str = Header(..., alias="user-i
         return response.data[0]
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.put("/{book_id}/notes")
-async def update_book_notes(
-    book_id: str, 
-    update: BookUpdate, 
-    user_id: str = Header(..., alias="user-id")
-):
-    try:
-        response = supabase.table('books').update({
-            'notes': update.notes,
-            'last_read_date': update.last_read_date,
-            'updated_at': datetime.utcnow().isoformat(),
-        }).eq('id', book_id).eq('user_id', user_id).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Book not found")
-        return response.data[0]
-    except Exception as e:
-        if "404" in str(e):
-            raise HTTPException(status_code=404, detail="Book not found")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.put("/{book_id}/status")
-async def update_book_status(
-    book_id: str, 
-    update: BookUpdate, 
-    user_id: str = Header(..., alias="user-id")
-):
-    try:
-        response = supabase.table('books').update({
-            'status': update.status,
-            'updated_at': update.updated_at or datetime.utcnow().isoformat(),
-        }).eq('id', book_id).eq('user_id', user_id).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Book not found")
-        return response.data[0]
-    except Exception as e:
-        if "404" in str(e):
-            raise HTTPException(status_code=404, detail="Book not found")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.put("/{book_id}/complete")
-async def complete_book_notes(
-    book_id: str, 
-    update: BookUpdate, 
-    user_id: str = Header(..., alias="user-id")
-):
-    try:
-        response = supabase.table('books').update({
-            'notes': update.notes,
-            'status': '読了(ノート完成)' if update.status else None,
-            'last_read_date': update.last_read_date,
-            'updated_at': update.updated_at or datetime.utcnow().isoformat(),
-        }).eq('id', book_id).eq('user_id', user_id).execute()
-        
-        if not response.data:
-            raise HTTPException(status_code=404, detail="Book not found")
-        return response.data[0]
-    except Exception as e:
-        if "404" in str(e):
-            raise HTTPException(status_code=404, detail="Book not found")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/img-upload")
@@ -181,3 +120,38 @@ async def delete_book(book_id: str, user_id: str = Header(..., alias="user-id"))
         if "404" in str(e):
             raise HTTPException(status_code=404, detail="Book not found")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{book_id}", response_model=Book)
+async def update_book(
+    book_id: str,
+    book: BookUpdate,
+    user_id: str = Header(..., alias="user-id")
+):
+    try:
+        # 本の存在確認とユーザーの所有権チェック
+        existing_book = supabase.table('books').select('*').eq('id', book_id).eq('user_id', user_id).single().execute()
+        if not existing_book.data:
+            raise HTTPException(
+                status_code=404,
+                detail="本が見つからないか、アクセス権限がありません"
+            )
+
+        # 更新するフィールドを動的に構築
+        update_data = {
+            k: v for k, v in book.dict(exclude_unset=True).items()
+            if v is not None
+        }
+        
+        # last_read_dateは常に更新
+        update_data['last_read_date'] = datetime.now().isoformat()
+
+        # 本を更新
+        updated_book = supabase.table('books').update(update_data).eq('id', book_id).eq('user_id', user_id).execute()
+
+        return updated_book.data[0]
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"本の更新に失敗しました: {str(e)}"
+        )

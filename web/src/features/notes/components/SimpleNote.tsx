@@ -46,12 +46,10 @@ export default function SimpleNote() {
     }
   };
 
-  const handleSave = async (complete: boolean) => {
+  const saveAndReturn = async () => {
     if (!book) return;
-
     try {
-      await api.completeBookNotes(book.id, user!.id, notes, complete);
-
+      await api.updateBook(user!.id, { ...book, notes });
       toast({
         title: '保存完了',
         description: '読書ノートを保存しました。',
@@ -59,18 +57,42 @@ export default function SimpleNote() {
         duration: 3000,
         isClosable: true,
       });
-
       navigate('/notes');
     } catch (error) {
-      console.error('Error saving notes:', error);
+      handleError(error);
+    }
+  };
+
+  const completeNote = async () => {
+    if (!book) return;
+    try {
+      await api.updateBook(user!.id, {
+        ...book,
+        notes,
+        status: '読了(ノート完成)',
+      });
       toast({
-        title: 'エラー',
-        description: '読書ノートの保存に失敗しました。',
-        status: 'error',
-        duration: 5000,
+        title: 'ノート完成',
+        description: 'ノートを完成しました！',
+        status: 'success',
+        duration: 3000,
         isClosable: true,
       });
+      navigate('/notes');
+    } catch (error) {
+      handleError(error);
     }
+  };
+
+  const handleError = (error: unknown) => {
+    console.error('Error saving notes:', error);
+    toast({
+      title: 'エラー',
+      description: '読書ノートの保存に失敗しました。',
+      status: 'error',
+      duration: 5000,
+      isClosable: true,
+    });
   };
 
   if (!book) {
@@ -110,7 +132,7 @@ export default function SimpleNote() {
             <Button
               variant="outline"
               colorScheme="gray"
-              onClick={() => handleSave(false)}
+              onClick={saveAndReturn}
               isDisabled={!notes.trim()}
               w={{ base: "100%", sm: "180px" }}
               h="44px"
@@ -119,7 +141,7 @@ export default function SimpleNote() {
             </Button>
             <Button
               colorScheme="blue"
-              onClick={() => handleSave(true)}
+              onClick={completeNote}
               isDisabled={!notes.trim()}
               w={{ base: "100%", sm: "180px" }}
               h="44px"

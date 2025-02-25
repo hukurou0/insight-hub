@@ -15,10 +15,11 @@ import {
   Skeleton,
   SkeletonText,
 } from '@chakra-ui/react';
-import { ArrowBackIcon, DeleteIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
-import { api } from '../../../shared/services/api';
 import { useAuth } from '../../auth';
+import { useBooks } from '../hooks/useBooks';
+import { api } from '../../../shared/services/api';
 
 export default function BookDetails() {
   const { id } = useParams<{ id: string }>();
@@ -26,24 +27,14 @@ export default function BookDetails() {
   const toast = useToast();
   const { user } = useAuth();
   const [book, setBook] = useState<Book | null>(null);
-  const [notes, setNotes] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isImageLoading, setIsImageLoading] = useState(true);
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const { deleteBook } = useBooks();
 
   useEffect(() => {
     if (id && user) {
       fetchBook();
-      if (window.location.hash === '#notes') {
-        setIsEditing(true);
-        setTimeout(() => {
-          const notesSection = document.getElementById('notes-section');
-          if (notesSection) {
-            notesSection.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-      }
     }
   }, [id, user]);
 
@@ -53,7 +44,6 @@ export default function BookDetails() {
     try {
       const data = await api.fetchBook(id!, user!.id);
       setBook(data);
-      setNotes(data.notes || '');
     } catch (error) {
       console.error('Error fetching book:', error);
       toast({
@@ -68,39 +58,12 @@ export default function BookDetails() {
     }
   };
 
-  const handleSaveNotes = async () => {
-    if (!book) return;
-
-    try {
-      await api.updateBookNotes(book.id, user!.id, notes);
-      setIsEditing(false);
-      setBook({ ...book, notes, lastReadDate: new Date().toISOString() });
-      
-      toast({
-        title: '保存完了',
-        description: '読書ノートを保存しました。',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      console.error('Error saving notes:', error);
-      toast({
-        title: 'エラー',
-        description: '読書ノートの保存に失敗しました。',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    }
-  };
-
   const handleDelete = async () => {
     if (!book) return;
 
     if (window.confirm('この本を削除してもよろしいですか？')) {
       try {
-        await api.deleteBook(book.id, user!.id);
+        await deleteBook.mutateAsync(book.id);
 
         toast({
           title: '削除完了',
@@ -273,55 +236,34 @@ export default function BookDetails() {
           <Heading size="md" mb={{ base: 2, md: 4 }}>
             読書ノート
           </Heading>
-          {isEditing ? (
-            <VStack spacing={{ base: 3, md: 4 }} align="stretch">
+          <VStack align="stretch" spacing={{ base: 3, md: 4 }}>
+            <Text
+              whiteSpace="pre-wrap"
+              fontSize={{ base: "sm", md: "md" }}
+            >
+              {book.notes || 'まだノートがありません。'}
+            </Text>
+            <Flex direction="column" gap={{ base: 2, md: 4 }} width="100%">
               <Button
+                onClick={() => navigate(`/books/${book.id}/write`)}
                 colorScheme="blue"
-                onClick={handleSaveNotes}
+                variant="outline"
                 width={{ base: "100%", sm: "auto" }}
+                leftIcon={<EditIcon />}
               >
-                保存
+                ノートを書く
               </Button>
               <Button
-                variant="ghost"
-                onClick={() => {
-                  setNotes(book.notes || '');
-                  setIsEditing(false);
-                }}
+                leftIcon={<DeleteIcon />}
+                onClick={handleDelete}
+                colorScheme="red"
+                variant="outline"
                 width={{ base: "100%", sm: "auto" }}
               >
-                キャンセル
+                本を削除
               </Button>
-            </VStack>
-          ) : (
-            <VStack align="stretch" spacing={{ base: 3, md: 4 }}>
-              <Text
-                whiteSpace="pre-wrap"
-                fontSize={{ base: "sm", md: "md" }}
-              >
-                {book.notes || 'まだノートがありません。'}
-              </Text>
-              <Flex direction="column" gap={{ base: 2, md: 4 }} width="100%">
-                <Button
-                  onClick={() => navigate(`/books/${book.id}/write`)}
-                  colorScheme="blue"
-                  variant="outline"
-                  width={{ base: "100%", sm: "auto" }}
-                >
-                  ノートを書く
-                </Button>
-                <Button
-                  leftIcon={<DeleteIcon />}
-                  onClick={handleDelete}
-                  colorScheme="red"
-                  variant="outline"
-                  width={{ base: "100%", sm: "auto" }}
-                >
-                  本を削除
-                </Button>
-              </Flex>
-            </VStack>
-          )}
+            </Flex>
+          </VStack>
         </Box>
       </VStack>
     </Box>

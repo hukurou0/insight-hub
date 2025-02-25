@@ -56,65 +56,6 @@ export const api = {
     }));
   },
 
-  async updateBookNotes(id: string, userId: string, notes: string): Promise<void> {
-    const response = await fetch(`${API_URL}/api/books/${id}/notes`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'user-id': userId,
-      },
-      body: JSON.stringify({
-        notes,
-        last_read_date: new Date().toISOString(),
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to update book notes');
-    }
-  },
-
-  async updateBookStatus(id: string, userId: string, status: Book['status']): Promise<void> {
-    const response = await fetch(`${API_URL}/api/books/${id}/status`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'user-id': userId,
-      },
-      body: JSON.stringify({
-        status,
-        updated_at: new Date().toISOString(),
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to update book status');
-    }
-  },
-
-  async completeBookNotes(id: string, userId: string, notes: string, complete: boolean): Promise<void> {
-    const response = await fetch(`${API_URL}/api/books/${id}/complete`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'user-id': userId,
-      },
-      body: JSON.stringify({
-        notes,
-        complete,
-        last_read_date: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to complete book notes');
-    }
-  },
-
   async deleteBook(id: string, userId: string): Promise<void> {
     const response = await fetch(`${API_URL}/api/books/${id}`, {
       method: 'DELETE',
@@ -169,5 +110,51 @@ export const api = {
 
     const data = await response.json();
     return data.url;
+  },
+
+  async updateBook(userId: string, book: Book): Promise<Book> {
+    const response = await fetch(`${API_URL}/api/books/${book.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'user-id': userId,
+      },
+      body: JSON.stringify({
+        title: book.title,
+        author: book.author,
+        status: book.status,
+        category: book.category,
+        notes: book.notes,
+        coverImage: book.coverImage,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || '本の更新に失敗しました');
+    }
+
+    return response.json();
+  },
+
+  async analyzeBookImage(imageSrc: string): Promise<{
+    title: string;
+    author: string;
+    category?: string;
+  }> {
+    const response = await fetch(`${API_URL}/api/book-analysis/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: imageSrc }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || '本の解析に失敗しました');
+    }
+
+    return response.json();
   },
 };

@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Box, Button, VStack, HStack, Image } from '@chakra-ui/react';
+import { Box, Button, VStack, HStack, Image, useToast } from '@chakra-ui/react';
 import { ViewIcon, EditIcon } from '@chakra-ui/icons';
 import { keyframes } from '@emotion/react';
+import { api } from '../../../shared/services/api';
 
 const flashAnimation = keyframes`
   0% { opacity: 0; }
@@ -33,12 +34,12 @@ export default function BookCamera({ onBookInfoDetected, onSwitchToManual }: Boo
   const [isCapturing, setIsCapturing] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showFlash, setShowFlash] = useState(false);
+  const toast = useToast();
 
   const captureImage = useCallback(async () => {
     setShowFlash(true);
     setTimeout(() => setShowFlash(false), 300);
 
-    // ここで width / height の指定を削除し、カメラの元の縦横比で取得
     const imageSrc = webcamRef.current?.getScreenshot();
     if (!imageSrc) return;
 
@@ -46,29 +47,24 @@ export default function BookCamera({ onBookInfoDetected, onSwitchToManual }: Boo
     setIsCapturing(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/book-analysis/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image_base64: imageSrc
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to analyze book cover');
-      }
-
-      const bookInfo = await response.json();
+      const bookInfo = await api.analyzeBookImage(imageSrc);
       onBookInfoDetected(bookInfo.title, bookInfo.author, bookInfo.category || '', imageSrc);
     } catch (error) {
-      console.error('Error processing image:', error);
+      console.error('Error analyzing book:', error);
+      toast({
+        title: 'エラー',
+        description: '本の解析に失敗しました。手動で入力してください。',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      if (onSwitchToManual) {
+        onSwitchToManual();
+      }
     } finally {
       setIsCapturing(false);
-      setCapturedImage(null);
     }
-  }, [onBookInfoDetected]);
+  }, [onBookInfoDetected, onSwitchToManual]);
 
   return (
     <VStack spacing={4} align="center">

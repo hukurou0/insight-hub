@@ -1,10 +1,10 @@
-import { VStack, Text, Badge, Box, Spinner, Center, Container } from '@chakra-ui/react';
+import { VStack, Text, Badge, Box, Spinner, Center } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../types/book';
 import BookSearch from './BookSearch';
-import { useBooks } from '../contexts/BooksContext';
+import { useBooks } from '../hooks/useBooks';
 
 export default function SearchPage() {
   const { books } = useBooks();
