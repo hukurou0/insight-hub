@@ -20,7 +20,7 @@ function AppContent() {
   const { user, loading } = useAuth();
   const { setBooks, isLoaded } = useBooks();
   const [showLoading, setShowLoading] = useState(true);
-  const MIN_LOADING_TIME = 1500;
+  const MIN_LOADING_TIME = 1650;
 
   useEffect(() => {
     const prefetchData = async () => {
@@ -53,7 +53,7 @@ function AppContent() {
             manualMode={false}
             blurAmount={5}
             borderColor="blue"
-            animationDuration={0.3}
+            animationDuration={0.5}
             pauseBetweenAnimations={0.5}
           />
         </VStack>
