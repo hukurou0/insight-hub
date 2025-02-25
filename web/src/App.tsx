@@ -1,6 +1,6 @@
 import { Center, VStack } from '@chakra-ui/react';
 import TrueFocus from './shared/components/TrueFocus';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Auth, useAuth } from './features/auth';
 import { Layout } from './features/layout';
 import {
@@ -53,29 +53,20 @@ function AppContent() {
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          {/* デフォルトで読書ノートページに遷移 */}
+          {/* ルートにアクセスされた場合、/notes にリダイレクト */}
           <Route index element={<Navigate to="/notes" replace />} />
-          
-          {/* 本の検索ページ */}
-          <Route path="search" element={<SearchPage />} />
-          
-          {/* 読書ノートページ */}
           <Route path="notes" element={<BookNotes />} />
-          
-          {/* 本の詳細ページ */}
+          {/* 他のルート */}
+          <Route path="search" element={<SearchPage />} />
           <Route path="books/:id" element={<BookDetails />} />
-
-          {/* ノートタイプ選択ページ */}  
           <Route path="books/:id/write" element={<NoteTypeSelector />} />
-
-          {/* シンプルノートページ */}
           <Route path="books/:id/notes/simple" element={<SimpleNote />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
