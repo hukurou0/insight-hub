@@ -94,9 +94,9 @@ function AppContent() {
 
 function App() {
   return (
-    <BooksProvider>
-      <AppContent />
-    </BooksProvider>
+      <BooksProvider>
+        <AppContent />
+      </BooksProvider>
   );
 }
 

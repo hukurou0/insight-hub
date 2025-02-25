@@ -1,52 +1,21 @@
-import { VStack, Text, Badge, Box, Spinner, Center, useToast } from '@chakra-ui/react';
+import { VStack, Text, Badge, Box, Spinner, Center, Container } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../types/book';
 import BookSearch from './BookSearch';
-import { api } from '../../../shared/services/api';
-import { useAuth } from '../../auth';
-import { fetchWithMinDuration } from '../../../shared/utils/fetchWithMinDuration';
+import { useBooks } from '../contexts/BooksContext';
 
 export default function SearchPage() {
-  const [books, setBooks] = useState<Book[]>([]);
+  const { books } = useBooks();
   const [filteredBooks, setFilteredBooks] = useState<Book[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const toast = useToast();
 
   useEffect(() => {
-    if (user) {
-      fetchBooks();
-    }
-  }, [user]);
-
-  const fetchBooks = async () => {
-    setIsLoading(true);
-
-    const fetchBooks = async () => {
-      const data = await api.fetchBooksWithNotes(user!.id);
-      return data;
-    };
-
-    try {
-      const data = await fetchWithMinDuration(fetchBooks);
-      setBooks(data);
-      setFilteredBooks(data);
-    } catch (error) {
-      console.error('Error fetching books:', error);
-      toast({
-        title: 'エラー',
-        description: '本の検索に失敗しました。',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setFilteredBooks(books);
+    setIsLoading(false);
+  }, [books]);
 
   const handleBookClick = (bookId: string) => {
     navigate(`/books/${bookId}`);
@@ -55,9 +24,9 @@ export default function SearchPage() {
   return (
     <Box position="relative" minH="calc(100vh - 200px)">
       <VStack spacing={{ base: 2, md: 6 }} align="stretch">
-        <BookSearch
-          books={books}
-          onFilteredBooksChange={setFilteredBooks}
+        <BookSearch 
+          existingBooks={books} 
+          onFilteredBooksChange={setFilteredBooks} 
         />
 
         <VStack spacing={{ base: 2, md: 4 }} align="stretch">

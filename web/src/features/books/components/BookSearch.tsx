@@ -12,16 +12,16 @@ import { SearchIcon } from '@chakra-ui/icons';
 import { Book } from '../types/book';
 
 interface BookSearchProps {
-  books: Book[];
-  onFilteredBooksChange: (filteredBooks: Book[]) => void;
+  existingBooks: Book[];
+  onFilteredBooksChange?: (books: Book[]) => void;
 }
 
-export default function BookSearch({ books, onFilteredBooksChange }: BookSearchProps) {
+export default function BookSearch({ existingBooks, onFilteredBooksChange }: BookSearchProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   // すべての本から分類を抽出
-  const allCategories = Array.from(new Set(books.map(book => book.category).filter(Boolean)));
+  const allCategories = Array.from(new Set(existingBooks.map(book => book.category).filter(Boolean)));
 
   // あいまい検索の実装
   const fuzzySearch = (text: string, query: string): boolean => {
@@ -40,7 +40,7 @@ export default function BookSearch({ books, onFilteredBooksChange }: BookSearchP
   };
 
   const filterBooks = (query: string, category: string) => {
-    return books.filter(book => {
+    return existingBooks.filter(book => {
       // カテゴリーによるフィルタリング
       const categoryMatches = category === '' || book.category === category;
 
@@ -59,13 +59,13 @@ export default function BookSearch({ books, onFilteredBooksChange }: BookSearchP
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    onFilteredBooksChange(filterBooks(query, selectedCategory));
+    onFilteredBooksChange?.(filterBooks(query, selectedCategory));
   };
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const category = e.target.value;
     setSelectedCategory(category);
-    onFilteredBooksChange(filterBooks(searchQuery, category));
+    onFilteredBooksChange?.(filterBooks(searchQuery, category));
   };
 
   return (
