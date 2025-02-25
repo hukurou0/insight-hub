@@ -8,32 +8,24 @@ import { useAuth } from '../../auth';
 import { generateCoverImage } from '../../../shared/utils/generateCoverImage';
 import AddBookForm  from './AddBookForm';
 import { fetchWithMinDuration } from '../../../shared/utils/fetchWithMinDuration';
+import { useBooks } from '../contexts/BooksContext';
 
 export default function BookNotes() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { books, setBooks, isLoaded } = useBooks();
   const { user } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const isMobile = useBreakpointValue({ base: true, md: false });
   const toast = useToast();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchBooksWithNotes();
-    }
-  }, [user]);
-
   const fetchBooksWithNotes = async () => {
-    setIsLoading(true);
-
-    const fetchBooks = async () => {
-      const data = await api.fetchBooksWithNotes(user!.id);
-      return data.filter(book => book.status !== '読了(ノート完成)');
-    };
+    if (!user) return;
 
     try {
-      const data = await fetchWithMinDuration(fetchBooks);
+      const data = await fetchWithMinDuration(async () => {
+        const books = await api.fetchBooksWithNotes(user.id);
+        return books.filter(book => book.status !== '読了(ノート完成)');
+      });
       setBooks(data);
     } catch (error) {
       console.error('Error fetching books with notes:', error);
@@ -44,14 +36,20 @@ export default function BookNotes() {
         duration: 5000,
         isClosable: true,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (user) {
+      fetchBooksWithNotes();
+    }
+  }, [user, setBooks]);
+
   const handleUpdateStatus = async (bookId: string, newStatus: Book['status']) => {
+    if (!user) return;
+
     try {
-      await api.updateBookStatus(bookId, user!.id, newStatus);
+      await api.updateBookStatus(bookId, user.id, newStatus);
       await fetchBooksWithNotes();
 
       toast({
@@ -73,13 +71,15 @@ export default function BookNotes() {
   };
 
   const handleAddBook = async (newBook: Book) => {
+    if (!user) return;
+
     try {
       const bookWithCover = {
         ...newBook,
         coverImage: newBook.coverImage || generateCoverImage(newBook.title, newBook.author)
       };
 
-      await api.addBook(user!.id, bookWithCover);
+      await api.addBook(user.id, bookWithCover);
       await fetchBooksWithNotes();
 
       toast({
@@ -289,6 +289,84 @@ export default function BookNotes() {
   const readingBooks = books.filter(book => book.status === '読書中');
   const unreadBooks = books.filter(book => book.status === '未読');
 
+  if (isLoaded) {
+    return (
+      <Box position="relative" minH="calc(100vh - 200px)">
+        <VStack spacing={8} align="stretch">
+          {!isMobile ? (
+            <Flex justify="space-between" align="center" mb={{ base: 0, md: 2 }}>
+              <Heading size="lg">本を読んでInsightを貯めましょう</Heading>
+              {books.length > 0 && <AddBookButton />}
+            </Flex>
+          ):(
+            <Flex justify="space-between" align="center" mb={{ base: 0, md: 0 }}>
+              <Heading size="lg">Insightを貯めましょう</Heading>
+            </Flex>
+          )}
+          
+          {books.length === 0 ? (
+            <VStack spacing={4} py={12} px={4} align="center">
+              <StarIcon
+                w={12}
+                h={12}
+                color="yellow.400"
+                animation="bounce 1s infinite"
+              />
+              <VStack spacing={2}>
+                <Text
+                  fontSize="xl"
+                  fontWeight="bold"
+                  color="yellow.500"
+                  textAlign="center"
+                >
+                  新しい本を読んでInsightを貯めましょう！
+                </Text>
+                <Text
+                  fontSize="md"
+                  color="gray.600"
+                  textAlign="center"
+                >
+                  読書を通じて得た気づきや学びを<br />
+                  ノートとして残していきましょう
+                </Text>
+              </VStack>
+              <Box pt={4}>
+                <AddBookButton />
+              </Box>
+            </VStack>
+          ) : (
+            <VStack spacing={{ base: 4, md: 8 }} align="stretch">
+              {renderBookSection(
+                isMobile ? '読了した本（ノート未記入）' : '読了した本（ノートを書きましょう！）',
+                readyToWriteBooks,
+                'ready'
+              )}
+              {renderBookSection('読書中の本', readingBooks, 'reading')}
+              {renderBookSection('未読の本', unreadBooks, 'unread')}
+            </VStack>
+          )}
+
+          {isMobile && books.length > 0 && (
+            <Box
+              position="fixed"
+              bottom={8}
+              right={8}
+              zIndex={2}
+            >
+              <AddBookButton />
+            </Box>
+          )}
+
+          <AddBookForm
+            isOpen={isOpen}
+            onClose={onClose}
+            onAddBook={handleAddBook}
+          />
+        </VStack>
+      </Box>
+    );
+  }
+
   return (
     <Box position="relative" minH="calc(100vh - 200px)">
       <VStack spacing={8} align="stretch">
@@ -303,7 +381,7 @@ export default function BookNotes() {
           </Flex>
         )}
         
-        {isLoading ? (
+        {!isLoaded ? (
           <Center py={12}>
             <VStack spacing={4}>
               <Spinner

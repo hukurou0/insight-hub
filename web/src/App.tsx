@@ -1,7 +1,9 @@
-import { Spinner, Center, VStack, Heading } from '@chakra-ui/react';
+import { Center, VStack } from '@chakra-ui/react';
+import TrueFocus from './shared/components/TrueFocus';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Auth, useAuth } from './features/auth';
 import { Layout } from './features/layout';
+import { api } from './shared/services/api';
 import {
   SearchPage,
   BookNotes,
@@ -11,16 +13,49 @@ import {
   NoteTypeSelector,
   SimpleNote,
 } from './features/notes';
+import { useState, useEffect } from 'react';
+import { BooksProvider, useBooks } from './features/books/contexts/BooksContext';
 
-function App() {
+function AppContent() {
   const { user, loading } = useAuth();
+  const { setBooks, isLoaded } = useBooks();
+  const [showLoading, setShowLoading] = useState(true);
+  const MIN_LOADING_TIME = 1500;
 
-  if (loading) {
+  useEffect(() => {
+    const prefetchData = async () => {
+      if (user && !isLoaded) {
+        try {
+          const books = await api.fetchBooksWithNotes(user.id);
+          setBooks(books);
+        } catch (error) {
+          console.error('Failed to prefetch books:', error);
+        }
+      }
+    };
+
+    if (!loading) {
+      Promise.all([
+        prefetchData(),
+        new Promise(resolve => setTimeout(resolve, MIN_LOADING_TIME))
+      ]).then(() => {
+        setShowLoading(false);
+      });
+    }
+  }, [loading, user, setBooks, isLoaded]);
+
+  if (showLoading) {
     return (
       <Center h="100vh">
         <VStack spacing={4}>
-          <Spinner size="xl" />
-          <Heading size="md">読み込み中...</Heading>
+          <TrueFocus 
+            sentence="Insight Hub"
+            manualMode={false}
+            blurAmount={5}
+            borderColor="blue"
+            animationDuration={0.3}
+            pauseBetweenAnimations={0.5}
+          />
         </VStack>
       </Center>
     );
@@ -54,6 +89,14 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
+    <BooksProvider>
+      <AppContent />
+    </BooksProvider>
   );
 }
 
