@@ -15,13 +15,14 @@ import {
 import { useState, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './shared/services/queryClient';
-//import { useBooks } from './features/books/hooks/useBooks';
+import { useBooks } from './features/books/hooks/useBooks';
 
 function AppContent() {
   const { user, loading } = useAuth();
-  //const { books } = useBooks();
   const [showLoading, setShowLoading] = useState(true);
   const MIN_LOADING_TIME = 1650;
+  const { books } = useBooks(); //preload books
+  console.log(books); //preload books
 
   useEffect(() => {
     if (!loading) {
