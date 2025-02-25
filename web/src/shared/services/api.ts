@@ -147,7 +147,9 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ image: imageSrc }),
+      body: JSON.stringify({ 
+        image_base64: imageSrc 
+      }),
     });
 
     if (!response.ok) {
