@@ -1,10 +1,11 @@
-import { VStack, Text, Badge, Box, Spinner, Center } from '@chakra-ui/react';
+import { VStack, Text, Box, Spinner, Center } from '@chakra-ui/react';
 import { SearchIcon } from '@chakra-ui/icons';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Book } from '../types/book';
 import BookSearch from './BookSearch';
 import { useBooks } from '../hooks/useBooks';
+import AnimatedList from './AnimatedList';
 
 export default function SearchPage() {
   const { books } = useBooks();
@@ -21,8 +22,34 @@ export default function SearchPage() {
     return () => clearTimeout(timer);
   }, [books]);
 
-  const handleBookClick = (bookId: string) => {
-    navigate(`/books/${bookId}`);
+  const handleBookClick = (_: string | JSX.Element, index: number) => {
+    navigate(`/books/${filteredBooks[index].id}`);
+  };
+
+  const renderBookItem = (book: Book) => {
+    return (
+      <Box
+        p={4}
+        borderWidth="1px"
+        borderRadius="lg"
+        width="100%"
+        transition="all 0.2s"
+      >
+        <VStack align="start" spacing={1} width="100%">
+          <Text fontWeight="bold" fontSize="lg">
+            {book.title}
+          </Text>
+          <Text fontSize="sm" color="gray.600">
+            {book.author}
+          </Text>
+          {book.category && (
+            <Text fontSize="sm" color="blue.500">
+              {book.category}
+            </Text>
+          )}
+        </VStack>
+      </Box>
+    );
   };
 
   return (
@@ -73,35 +100,17 @@ export default function SearchPage() {
               </Text>
             </VStack>
           ) : (
-            filteredBooks.map((book) => (
-              <Box
-                key={book.id}
-                onClick={() => handleBookClick(book.id)}
-                p={4}
-                borderWidth="1px"
-                borderRadius="lg"
-                cursor="pointer"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'md',
-                }}
-                transition="all 0.2s"
-              >
-                <VStack align="start" spacing={1} width="100%">
-                  <Text fontWeight="bold" fontSize="lg">
-                    {book.title}
-                  </Text>
-                  <Text fontSize="sm" color="gray.600">
-                    {book.author}
-                  </Text>
-                  {book.category && (
-                    <Badge colorScheme="blue" fontSize="sm">
-                      {book.category}
-                    </Badge>
-                  )}
-                </VStack>
+              <Box display="flex" justifyContent="center" width="100%">
+                <AnimatedList
+                  items={filteredBooks.map(book => renderBookItem(book))}
+                  onItemSelect={handleBookClick}
+                  showGradients={true}
+                  enableArrowNavigation={true}
+                  displayScrollbar={false}
+                  className="books-list"
+                  itemClassName="book-item"
+                />
               </Box>
-            ))
           )}
         </VStack>
       </VStack>
